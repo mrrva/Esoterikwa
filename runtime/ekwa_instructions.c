@@ -88,6 +88,7 @@ ekwa_instruction_add(struct ekwa_instruction **list,
 {
 	size_t len = sizeof(struct ekwa_instruction);
 	struct ekwa_instruction *ptr = *list, *one;
+	char *name;
 
 	one = (struct ekwa_instruction*)malloc(len);
 
@@ -103,13 +104,19 @@ ekwa_instruction_add(struct ekwa_instruction **list,
 		ptr = ptr->next;
 	}
 
+#ifdef RUNTIME_DEBUG
+	name = ekwa_token_name((char)new.token);
+	printf("New token: %s\n", name);
+	free(name);
+#endif
+
 	ptr->next = one;
 }
 
 void
-ekwa_instruction_clear(struct ekwa_instruction *list)
+ekwa_instruction_clear(struct ekwa_instruction **list)
 {
-	struct ekwa_instruction *ptr = list, *tmp;
+	struct ekwa_instruction *ptr = *list, *tmp;
 
 	while (ptr && ptr != NULL) {
 		tmp = ptr->next;
@@ -117,9 +124,70 @@ ekwa_instruction_clear(struct ekwa_instruction *list)
 		ptr = tmp;
 	}
 
-	list = NULL;
+	*list = NULL;
 }
 
+char *
+ekwa_token_name(char tok)
+{
+	char *name;
+
+	if (ptr >= EKWA_END || ptr == 0x00) {
+		return NULL;
+	}
+
+	switch (toke) {
+	case EKWA_VAR:
+		name = "EKWA_VAR";
+		break;
+
+	case EKWA_BUFF:
+		name = "EKWA_BUFF";
+		break;
+
+	case EKWA_ARG:
+		name = "EKWA_ARG";
+		break;
+
+	case EKWA_CALL:
+		name = "EKWA_CALL";
+		break;
+
+	case EKWA_JMP:
+		name = "EKWA_JMP";
+		break;
+
+	case EKWA_FSET:
+		name = "EKWA_FSET";
+		break;
+
+	case EKWA_WRT:
+		name = "EKWA_WRT";
+		break;
+
+	case EKWA_CMP:
+		name = "EKWA_CMP";
+		break;
+
+	case EKWA_IFS:
+		name = "EKWA_IFS";
+		break;
+
+	case EKWA_IFB:
+		name = "EKWA_IFB";
+		break;
+
+	case EKWA_INFO:
+		name = "EKWA_INFO";
+		break;
+
+	default:
+		name = "EKWA_UNDECLARED";
+		break;
+	}
+
+	return name;
+}
 /*
 #define RES_FLAG 0xFFFFFFFF
 
