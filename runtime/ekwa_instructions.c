@@ -1,5 +1,5 @@
 
-#include "include/runtime.h"
+#include "runtime.h"
 
 void
 ekwa_instruction_add(struct ekwa_instruction **,
@@ -12,8 +12,8 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 {
 	struct ekwa_instruction line;
 	unsigned char *ptr = bytes;
+	uint16_t len = 0;
 	size_t num = 0;
-	uint16_t len;
 
 	if (!bytes || size < 3) {
 		return false;
@@ -21,9 +21,7 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 
 	while (num++, ptr && ptr != NULL) {
 		if (*ptr >= EKWA_END || *ptr == 0x00) {
-			printf("[E]: Invalid token %x"
-				", line: %lu\n", *ptr, num);
-			exit(1);
+			break;
 		}
 
 		line.token = *ptr;
@@ -46,9 +44,11 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 			line.arg1[0] = 0x00;
 			line.arg2[0] = 0x00;
 			ekwa_instruction_add(list, line);
+			continue;
 		}
 
-		memcpy(line.arg1, ptr, len);
+		memcpy(line.arg1 + sizeof(len), ptr, len);
+		memcpy(line.arg1, &len, sizeof(uint16_t));
 		ptr += len;
 
 		if (!ptr) {
@@ -68,15 +68,17 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 		else if (len == 0) {
 			line.arg2[0] = 0x00;
 			ekwa_instruction_add(list, line);
+			continue;
 		}
 
-		memcpy(line.arg2, ptr, len);
+		memcpy(line.arg1 + sizeof(len), ptr, len);
+		memcpy(line.arg1, &len, sizeof(uint16_t));
 		ekwa_instruction_add(list, line);
 		ptr += len;
 	}
 
 #ifdef RUNTIME_DEBUG
-	printf("[I]: Number of instructions: %lu\n", num);
+	printf("[I]: Number of commands: %lu\n", --num);
 #endif
 
 	return true;
@@ -88,27 +90,25 @@ ekwa_instruction_add(struct ekwa_instruction **list,
 {
 	size_t len = sizeof(struct ekwa_instruction);
 	struct ekwa_instruction *ptr = *list, *one;
-	char *name;
 
 	one = (struct ekwa_instruction*)malloc(len);
 
 	if (!one) {
 		printf("[E]: Can't allocate memory.\n");
 		exit(1);
-	} 
+	}
 
 	memcpy(one, &new, len);
 	one->next = NULL;
 
+	if (!(*list) || (*list) == NULL) {
+		*list = one;
+		return;
+	}
+
 	while (ptr->next && ptr->next != NULL) {
 		ptr = ptr->next;
 	}
-
-#ifdef RUNTIME_DEBUG
-	name = ekwa_token_name((char)new.token);
-	printf("New token: %s\n", name);
-	free(name);
-#endif
 
 	ptr->next = one;
 }
@@ -125,68 +125,6 @@ ekwa_instruction_clear(struct ekwa_instruction **list)
 	}
 
 	*list = NULL;
-}
-
-char *
-ekwa_token_name(char tok)
-{
-	char *name;
-
-	if (ptr >= EKWA_END || ptr == 0x00) {
-		return NULL;
-	}
-
-	switch (toke) {
-	case EKWA_VAR:
-		name = "EKWA_VAR";
-		break;
-
-	case EKWA_BUFF:
-		name = "EKWA_BUFF";
-		break;
-
-	case EKWA_ARG:
-		name = "EKWA_ARG";
-		break;
-
-	case EKWA_CALL:
-		name = "EKWA_CALL";
-		break;
-
-	case EKWA_JMP:
-		name = "EKWA_JMP";
-		break;
-
-	case EKWA_FSET:
-		name = "EKWA_FSET";
-		break;
-
-	case EKWA_WRT:
-		name = "EKWA_WRT";
-		break;
-
-	case EKWA_CMP:
-		name = "EKWA_CMP";
-		break;
-
-	case EKWA_IFS:
-		name = "EKWA_IFS";
-		break;
-
-	case EKWA_IFB:
-		name = "EKWA_IFB";
-		break;
-
-	case EKWA_INFO:
-		name = "EKWA_INFO";
-		break;
-
-	default:
-		name = "EKWA_UNDECLARED";
-		break;
-	}
-
-	return name;
 }
 /*
 #define RES_FLAG 0xFFFFFFFF
