@@ -6,17 +6,17 @@ $bytecode = NULL;
 
 $tokens = array(
 	"EKWA_VAR"	=> "\x01",
-	"EKWA_BUFF" => "\x02",
+	"EKWA_BUFF"	=> "\x02",
 	"EKWA_ARG"	=> "\x03",
 	"EKWA_CALL"	=> "\x04",
 	"EKWA_JMP"	=> "\x05",
-	"EKWA_FSET" => "\x06",
+	"EKWA_FSET"	=> "\x06",
 	"EKWA_WRT"	=> "\x07",
 	"EKWA_CMP"	=> "\x08",
 	"EKWA_IFS"	=> "\x0a",
 	"EKWA_IFB"	=> "\x0b",
-	"EKWA_INFO" => "\x0c",
-	"EKWA_SHOW" => "\x0d",
+	"EKWA_INFO"	=> "\x0c",
+	"EKWA_SHOW"	=> "\x0d",
 	"EKWA_RMV"	=> "\x0e",
 	"EKWA_END"	=> "\x0f"
 );
