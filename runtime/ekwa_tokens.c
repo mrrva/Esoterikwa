@@ -125,6 +125,30 @@ ekwa_token_write(struct ekwa_instruction *line,
 #endif
 }
 
+void
+ekwa_token_jump(struct ekwa_instruction **line)
+{
+	struct ekwa_flag *flag;
+
+	if (!(*line) || (*line) == NULL) {
+		printf("[E]: ekwa_token_jump args.\n");
+		exit(1);
+	}
+
+	flag = ekwa_get_flag((*line)->arg1);
+
+	if (!flag || flag == NULL) {
+		printf("[E]: Can't find flag.\n");
+		exit(1);
+	}
+
+	*line = flag->point;
+#ifdef RUNTIME_DEBUG
+	printf("[I]: Jump to flag %s.\n",
+			flag->name + 2);
+#endif
+}
+
 char *
 ekwa_token_name(enum ekwa_tokens token)
 {

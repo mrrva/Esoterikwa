@@ -49,9 +49,16 @@ struct ekwa_instruction {
 	enum ekwa_tokens token;
 };
 
+struct ekwa_flag {
+	unsigned char name[MAXBUFFER_LEN + sizeof(uint16_t)];
+	struct ekwa_instruction *point;
+	struct ekwa_flag *next;
+};
+
 extern unsigned char _binary_instructions_start[];
 extern unsigned char _binary_instructions_end[];
 extern const size_t _binary_instructions_size;
+struct ekwa_flag *ekwa_flags;
 struct ekwa_var *ekwa_vars;
 struct ekwa_arg *ekwa_args;
 
@@ -62,12 +69,21 @@ ekwa_frombytecode(struct ekwa_instruction **,
 void
 ekwa_instruction_clear(struct ekwa_instruction **);
 
+struct ekwa_flag *
+ekwa_get_flag(unsigned char *);
+
 void
 ekwa_virtual_machine(struct ekwa_instruction *);
 
 void
 ekwa_exception(enum ekwa_tokens, struct ekwa_var *,
 			bool);
+
+void
+ekwa_token_jump(struct ekwa_instruction **);
+
+void
+ekwa_set_flags(struct ekwa_instruction *);
 
 void
 ekwa_token_buffer(struct ekwa_instruction *,

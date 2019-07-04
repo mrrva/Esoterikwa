@@ -23,6 +23,7 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 	}
 
 	memset(buffer, 0x00, buff_size);
+	ekwa_set_flags(list);
 
 	while (ptr && ptr != NULL) {
 		switch (ptr->token) {
@@ -45,6 +46,10 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 		case EKWA_WRT:
 			ekwa_token_write(ptr, buffer);
 			memset(buffer, 0x00, buff_size);
+			break;
+
+		case EKWA_JMP:
+			ekwa_token_jump(&ptr);
 			break;
 		}
 
@@ -161,7 +166,80 @@ ekwa_hex_buffer(unsigned char *buff)
 	printf("\n");
 }
 
-struct ekwa_flag *ekwa_get_flags(struct ekwa_instruction *list)
+void
+ekwa_set_flags(struct ekwa_instruction *list)
 {
+	size_t bsize = MAXBUFFER_LEN + sizeof(uint16_t);
+	size_t i = 0, fsize = sizeof(struct ekwa_flag);
+	struct ekwa_instruction *tmp = list;
+	struct ekwa_flag *flag;
 
+	if (!list || list == NULL) {
+		printf("[E]: ekwa_get_flags args.\n");
+		exit(1);
+	}
+
+	while (i++, tmp != NULL) {
+		if (tmp->token != EKWA_FSET) {
+			tmp = tmp->next;
+			continue;
+		}
+
+		if (tmp->arg1[0] + tmp->arg1[1] == 0x00) {
+			printf("[E]: Inccorect flag in %lu line.\n",
+					i - 1);
+			exit(1);
+		}
+
+		if (!tmp->next || tmp->next == NULL) {
+			printf("[E]: Can't set flag.\n");
+			exit(1);
+		}
+
+		flag = (struct ekwa_flag *)malloc(fsize);
+
+		if (!flag) {
+			printf("[E]: Can't allocate memory.\n");
+			exit(1);
+		}
+
+		memcpy(flag->name, tmp->arg1, bsize);
+		flag->next = ekwa_flags;
+		flag->point = tmp;
+		ekwa_flags = flag;
+
+	#ifdef RUNTIME_DEBUG
+		printf("[I]: New flag, line %lu.\n", i - 1);
+	#endif
+		tmp = tmp->next->next;
+	}
+}
+
+struct ekwa_flag *
+ekwa_get_flag(unsigned char *buffer)
+{
+	struct ekwa_flag *tmp = ekwa_flags;
+	uint16_t len = 0;
+
+	if (!buffer || buffer == NULL) {
+		printf("[E]: ekwa_get_flag args.\n");
+		exit(1);
+	}
+
+	memcpy(&len, buffer, sizeof(uint16_t));
+
+	if (len == 0) {
+		printf("[E]: Incorrect name of flag.\n");
+		exit(1);
+	}
+
+	while (tmp != NULL) {
+		if (memcmp(buffer + 2, tmp->name + 2,
+					len) != 0) {
+			tmp = tmp->next;
+			continue;
+		}
+
+		return tmp;
+	}
 }

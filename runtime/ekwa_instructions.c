@@ -21,7 +21,6 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 
 	while (num++, ptr && ptr != NULL) {
 		if (*ptr >= EKWA_END || *ptr == 0x00) {
-			printf("Last position: %ld\n", pos);
 			break;
 		}
 

@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
 #ifdef RUNTIME_DEBUG
 	printf("[I]: Size of instructions: %ld bytes.\n", size);
 #endif
+	ekwa_flags= NULL;
 	ekwa_vars = NULL;
 	ekwa_args = NULL;
 
