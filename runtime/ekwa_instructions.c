@@ -13,7 +13,7 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 	struct ekwa_instruction line;
 	unsigned char *ptr = bytes;
 	uint16_t len = 0;
-	size_t num = 0;
+	size_t num = 0, pos = 0;
 
 	if (!bytes || size < 3) {
 		return false;
@@ -21,6 +21,7 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 
 	while (num++, ptr && ptr != NULL) {
 		if (*ptr >= EKWA_END || *ptr == 0x00) {
+			printf("Last position: %ld\n", pos);
 			break;
 		}
 
@@ -34,6 +35,7 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 
 		memcpy(&len, ptr, sizeof(uint16_t));
 		ptr += sizeof(uint16_t);
+		len >>= 8;
 
 		if (len > MAXBUFFER_LEN || !ptr) {
 			printf("[E]: Invalid arg 1 for %x"
@@ -41,8 +43,8 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 			exit(1);
 		}
 		else if (len == 0) {
-			line.arg1[0] = 0x00;
-			line.arg2[0] = 0x00;
+			memset(line.arg1, 0x00, 2);
+			memset(line.arg2, 0x00, 2);
 			ekwa_instruction_add(list, line);
 			continue;
 		}
@@ -59,6 +61,7 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 
 		memcpy(&len, ptr, sizeof(uint16_t));
 		ptr += sizeof(uint16_t);
+		len >>= 8;
 
 		if (len > MAXBUFFER_LEN || !ptr) {
 			printf("[E]: Invalid arg 2 for %x"
@@ -66,13 +69,13 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 			exit(1);
 		}
 		else if (len == 0) {
-			line.arg2[0] = 0x00;
+			memset(line.arg2, 0x00, 2);
 			ekwa_instruction_add(list, line);
 			continue;
 		}
 
-		memcpy(line.arg1 + sizeof(len), ptr, len);
-		memcpy(line.arg1, &len, sizeof(uint16_t));
+		memcpy(line.arg2 + sizeof(len), ptr, len);
+		memcpy(line.arg2, &len, sizeof(uint16_t));
 		ekwa_instruction_add(list, line);
 		ptr += len;
 	}

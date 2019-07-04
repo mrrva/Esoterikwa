@@ -9,11 +9,16 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 {
 	size_t buff_size = MAXBUFFER_LEN + sizeof(uint16_t);
 	struct ekwa_instruction *ptr = list;
-	unsigned char buffer[buff_size];
+	unsigned char *buffer;
 	size_t cur_line = 0;
 
 	if (!list || list == NULL) {
 		printf("[E]: Instrunctions struct is empty.\n");
+		exit(1);
+	}
+
+	if (!(buffer = (unsigned char *)malloc(buff_size))) {
+		printf("[E]: Can't allocate memory.\n");
 		exit(1);
 	}
 
@@ -27,6 +32,19 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 
 		case EKWA_SHOW:
 			ekwa_token_show(ptr);
+			break;
+
+		case EKWA_VAR:
+			ekwa_token_var(ptr);
+			break;
+
+		case EKWA_BUFF:
+			ekwa_token_buffer(ptr, &buffer);
+			break;
+
+		case EKWA_WRT:
+			ekwa_token_write(ptr, buffer);
+			memset(buffer, 0x00, buff_size);
 			break;
 		}
 
@@ -60,6 +78,18 @@ ekwa_find_var(unsigned char *name)
 }
 
 void
+ekwa_new_var(struct ekwa_var *new)
+{
+	if (!new || new == NULL) {
+		printf("[W]: Can't add new var.\n");
+		return;
+	}
+
+	new->next = ekwa_vars;
+	ekwa_vars = new;
+}
+
+void
 ekwa_exception(enum ekwa_tokens token, struct ekwa_var *var,
 			bool fatal)
 {
@@ -67,12 +97,12 @@ ekwa_exception(enum ekwa_tokens token, struct ekwa_var *var,
 	uint16_t size;
 
 	if ((!var || var == NULL) && fatal) {
-		printf("[Exception]: Incorrect argument for "
+		printf("\n[Exception]: Incorrect argument for "
 				"token %s\n", name);
 		exit(1);
 	}
 	else if ((!var || var == NULL) && !fatal) {
-		printf("[Exception]: Incorrect argument for "
+		printf("\n[Exception]: Incorrect argument for "
 				"token %s\n", name);
 		return;
 	}
@@ -86,7 +116,7 @@ ekwa_exception(enum ekwa_tokens token, struct ekwa_var *var,
 	}
 
 	if (size == 0 || size > MAXBUFFER_LEN) {
-		printf("[Exception]: Incorrect argument for "
+		printf("\n[Exception]: Incorrect argument for "
 				"token %s\n", name);
 
 		if (fatal) {
@@ -96,7 +126,7 @@ ekwa_exception(enum ekwa_tokens token, struct ekwa_var *var,
 	}
 
 	strncpy(var_name, var->name, size);
-	printf("[Exception]: Token: %s Var: %s", name,
+	printf("\n[Exception]: Token: %s Var: %s", name,
 			var_name);
 
 	printf("[Var dump]:\n");
@@ -129,4 +159,9 @@ ekwa_hex_buffer(unsigned char *buff)
 	}
 
 	printf("\n");
+}
+
+struct ekwa_flag *ekwa_get_flags(struct ekwa_instruction *list)
+{
+
 }

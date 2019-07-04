@@ -26,13 +26,14 @@ enum ekwa_tokens {
 	EKWA_IFB	= 0x0b, // If arg is bigger.
 	EKWA_INFO	= 0x0c, // Info about VM.
 	EKWA_SHOW	= 0x0d, // Print var value as a string.
-	EKWA_RMV	= 0x0e, // Remove var from struct.
+	EKWA_RMV	= 0x0e, // Remove var.
 
 	EKWA_END	= 0x0f  // Last byte token.
 };
 
-struct ekwa_args {
-
+struct ekwa_arg {
+	unsigned char arg[MAXBUFFER_LEN + sizeof(uint16_t)];
+	struct ekwa_arg *next;
 };
 
 struct ekwa_var {
@@ -52,6 +53,7 @@ extern unsigned char _binary_instructions_start[];
 extern unsigned char _binary_instructions_end[];
 extern const size_t _binary_instructions_size;
 struct ekwa_var *ekwa_vars;
+struct ekwa_arg *ekwa_args;
 
 bool
 ekwa_frombytecode(struct ekwa_instruction **,
@@ -68,7 +70,21 @@ ekwa_exception(enum ekwa_tokens, struct ekwa_var *,
 			bool);
 
 void
+ekwa_token_buffer(struct ekwa_instruction *,
+				unsigned char **);
+
+void
+ekwa_token_write(struct ekwa_instruction *,
+				unsigned char *);
+
+void
 ekwa_token_show(struct ekwa_instruction *);
+
+void
+ekwa_token_var(struct ekwa_instruction *);
+
+void
+ekwa_new_var(struct ekwa_var *);
 
 char *
 ekwa_token_name(enum ekwa_tokens);

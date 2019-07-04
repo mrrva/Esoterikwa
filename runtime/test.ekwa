@@ -1,0 +1,11 @@
+#-- Test of adding new var.
+EKWA_INFO
+EKWA_VAR test_var Hello_World!!
+EKWA_SHOW test_var
+
+#-- Test of variable assignment.
+EKWA_VAR second
+EKWA_BUFF test_var
+EKWA_WRT second
+EKWA_SHOW second
+
