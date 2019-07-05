@@ -51,6 +51,10 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 		case EKWA_JMP:
 			ekwa_token_jump(&ptr);
 			break;
+
+		case EKWA_CMP:
+			ekwa_token_comparing(&ptr);
+			break;
 		}
 
 		ptr = ptr->next;
@@ -188,11 +192,6 @@ ekwa_set_flags(struct ekwa_instruction *list)
 		if (tmp->arg1[0] + tmp->arg1[1] == 0x00) {
 			printf("[E]: Inccorect flag in %lu line.\n",
 					i - 1);
-			exit(1);
-		}
-
-		if (!tmp->next || tmp->next == NULL) {
-			printf("[E]: Can't set flag.\n");
 			exit(1);
 		}
 

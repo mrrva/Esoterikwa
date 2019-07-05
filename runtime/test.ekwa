@@ -9,13 +9,18 @@ EKWA_BUFF test_var
 EKWA_WRT second
 EKWA_SHOW second
 
-#-- Test of jumping
-EKWA_VAR cycle_var Test...
-EKWA_FSET label1
-EKWA_SHOW cycle_var
-EKWA_JMP label1
+#-- Test of jumping.
+#EKWA_VAR cycle_var Test...
+#EKWA_FSET label1
+#EKWA_SHOW cycle_var
+#EKWA_JMP label1
 
-#-- Test cycle with EKWA_CMP
+#-- Test of comparing.
+EKWA_VAR cycle_var Test...
+EKWA_CMP second test_var
+EKWA_SHOW cycle_var
+
+#-- Test of jumping with EKWA_CMP
 #EKWA_FSET label1
 #EKWA_CMP test_var second
 #EKWA_JMP out_label1

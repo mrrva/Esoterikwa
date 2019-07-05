@@ -27,8 +27,9 @@ enum ekwa_tokens {
 	EKWA_INFO	= 0x0c, // Info about VM.
 	EKWA_SHOW	= 0x0d, // Print var value as a string.
 	EKWA_RMV	= 0x0e, // Remove var.
+	EKWA_TYPE	= 0x0f, // Set type of comparing.
 
-	EKWA_END	= 0x0f  // Last byte token.
+	EKWA_END	= 0x10  // Last byte token.
 };
 
 struct ekwa_arg {
@@ -92,6 +93,9 @@ ekwa_token_buffer(struct ekwa_instruction *,
 void
 ekwa_token_write(struct ekwa_instruction *,
 				unsigned char *);
+
+void
+ekwa_token_comparing(struct ekwa_instruction **);
 
 void
 ekwa_token_show(struct ekwa_instruction *);

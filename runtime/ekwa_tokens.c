@@ -149,6 +149,56 @@ ekwa_token_jump(struct ekwa_instruction **line)
 #endif
 }
 
+void
+ekwa_token_comparing(struct ekwa_instruction **line)
+{
+	struct ekwa_var *var_1, *var_2;
+	uint16_t len1 = 0, len2 = 0;
+
+	if (!(*line) || (*line) == NULL) {
+		printf("[E]: ekwa_token_comparing args.\n");
+		exit(1);
+	}
+
+	var_1 = ekwa_find_var((*line)->arg1);
+	var_2 = ekwa_find_var((*line)->arg2);
+
+	if (!var_1 || var_1 == NULL || !var_2
+		|| var_2 == NULL) {
+		printf("[E]: Incorrect comparing.\n");
+		exit(1);
+	}
+
+	memcpy(&len1, var_1->value, sizeof(uint16_t));
+	memcpy(&len2, var_2->value, sizeof(uint16_t));
+
+	if (len1 == 0 || len2 == 0) {
+		printf("[E]: Incorrect length of arg "
+				"in ekwa_token_comparing.\n");
+		exit(1);
+	}
+
+	if (len1 != len2) {
+		if (!(*line)->next->next
+			|| (*line)->next->next == NULL) {
+			exit(1);
+		}
+
+		*line = (*line)->next;
+		return;
+	}
+
+	if (memcmp(var_1->value + 2, var_2->value + 2,
+				len1) != 0) {
+		if (!(*line)->next->next
+			|| (*line)->next->next == NULL) {
+			exit(1);
+		}
+		*line = (*line)->next;
+		return;
+	}
+}
+
 char *
 ekwa_token_name(enum ekwa_tokens token)
 {

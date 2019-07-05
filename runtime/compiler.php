@@ -18,7 +18,8 @@ $tokens = array(
 	"EKWA_INFO"	=> "\x0c",
 	"EKWA_SHOW"	=> "\x0d",
 	"EKWA_RMV"	=> "\x0e",
-	"EKWA_END"	=> "\x0f"
+	"EKWA_TYPE"	=> "\x0f",
+	"EKWA_END"	=> "\x00"
 );
 
 foreach ($lines as $line) {
