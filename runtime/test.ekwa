@@ -1,32 +1,34 @@
 #-- Test of adding new var.
 EKWA_INFO
-EKWA_VAR test_var Hello_World!!
-EKWA_SHOW test_var
+EKWA_VAR	test_var	Hello World!
+EKWA_SHOW	test_var
 
 #-- Test of variable assignment.
-EKWA_VAR second
-EKWA_BUFF test_var
-EKWA_WRT second
-EKWA_SHOW second
-
-#-- Test of jumping.
-#EKWA_VAR cycle_var Test...
-#EKWA_FSET label1
-#EKWA_SHOW cycle_var
-#EKWA_JMP label1
+EKWA_VAR	second
+EKWA_BUFF	test_var
+EKWA_WRT	second
+EKWA_SHOW	second
 
 #-- Test of comparing.
-EKWA_VAR cycle_var Test...
-EKWA_CMP second test_var
-EKWA_SHOW cycle_var
+EKWA_VAR	cmp_var	randomdata
+EKWA_CMP	second	cmp_var
+EKWA_SHOW	cmp_var
+EKWA_VAR	second	randomdata
+EKWA_CMP	second	cmp_var
+EKWA_SHOW	cmp_var
 
-#-- Test of jumping with EKWA_CMP
-#EKWA_FSET label1
-#EKWA_CMP test_var second
-#EKWA_JMP out_label1
-#EKWA_SHOW second
-#EKWA_JMP label1
-#EKWA_FSET out_label1
-#EKWA_VAR final_label1 Label1_is_done.
-#EKWA_SHOW final_label1
+#-- Test of var removing.
+EKWA_RMV	test_var
 
+#-- Test of adding args.
+EKWA_VAR	libspath	./
+EKWA_ARG	libspath
+
+#-- Test of calling functions.
+EKWA_CALL	tmodule.test
+
+#-- Test of jumping.
+#EKWA_VAR	cycle_var	Test...
+#EKWA_FSET	label1
+#EKWA_SHOW	cycle_var
+#EKWA_JMP	label1

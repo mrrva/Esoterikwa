@@ -19,11 +19,11 @@ $tokens = array(
 	"EKWA_SHOW"	=> "\x0d",
 	"EKWA_RMV"	=> "\x0e",
 	"EKWA_TYPE"	=> "\x0f",
-	"EKWA_END"	=> "\x00"
+	"EKWA_END"	=> "\x10"
 );
 
 foreach ($lines as $line) {
-	$elements = explode(" ", $line);
+	$elements = explode("\t", $line);
 
 	if (!isset($tokens[$elements[0]])) {
 		continue;

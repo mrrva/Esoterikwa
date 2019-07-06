@@ -5,20 +5,22 @@ void
 ekwa_hex_buffer(unsigned char *);
 
 void
+ekwa_arguments_clear(void);
+
+void
 ekwa_virtual_machine(struct ekwa_instruction *list)
 {
 	size_t buff_size = MAXBUFFER_LEN + sizeof(uint16_t);
 	struct ekwa_instruction *ptr = list;
 	unsigned char *buffer;
-	size_t cur_line = 0;
 
 	if (!list || list == NULL) {
-		printf("[E]: Instrunctions struct is empty.\n");
+		printf("\n[E]: Instrunctions struct is empty.\n");
 		exit(1);
 	}
 
 	if (!(buffer = (unsigned char *)malloc(buff_size))) {
-		printf("[E]: Can't allocate memory.\n");
+		printf("\n[E]: Can't allocate memory.\n");
 		exit(1);
 	}
 
@@ -55,10 +57,22 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 		case EKWA_CMP:
 			ekwa_token_comparing(&ptr);
 			break;
+
+		case EKWA_RMV:
+			ekwa_token_remove_var(ptr);
+			break;
+
+		case EKWA_ARG:
+			ekwa_token_add_arg(ptr);
+			break;
+
+		case EKWA_CALL:
+			ekwa_token_call(ptr);
+			ekwa_arguments_clear();
+			break;
 		}
 
 		ptr = ptr->next;
-		cur_line++;
 	}
 }
 
@@ -90,7 +104,7 @@ void
 ekwa_new_var(struct ekwa_var *new)
 {
 	if (!new || new == NULL) {
-		printf("[W]: Can't add new var.\n");
+		printf("\n[W]: Can't add new var.\n");
 		return;
 	}
 
@@ -120,7 +134,7 @@ ekwa_exception(enum ekwa_tokens token, struct ekwa_var *var,
 	var_name = (char *)malloc(size + 1);
 
 	if (!var_name) {
-		printf("[E]: Can't allocate memory.\n");
+		printf("\n[E]: Can't allocate memory.\n");
 		exit(1);
 	}
 
@@ -179,7 +193,7 @@ ekwa_set_flags(struct ekwa_instruction *list)
 	struct ekwa_flag *flag;
 
 	if (!list || list == NULL) {
-		printf("[E]: ekwa_get_flags args.\n");
+		printf("\n[E]: ekwa_get_flags args.\n");
 		exit(1);
 	}
 
@@ -190,7 +204,7 @@ ekwa_set_flags(struct ekwa_instruction *list)
 		}
 
 		if (tmp->arg1[0] + tmp->arg1[1] == 0x00) {
-			printf("[E]: Inccorect flag in %lu line.\n",
+			printf("\n[E]: Inccorect flag in %lu line.\n",
 					i - 1);
 			exit(1);
 		}
@@ -198,7 +212,7 @@ ekwa_set_flags(struct ekwa_instruction *list)
 		flag = (struct ekwa_flag *)malloc(fsize);
 
 		if (!flag) {
-			printf("[E]: Can't allocate memory.\n");
+			printf("\n[E]: Can't allocate memory.\n");
 			exit(1);
 		}
 
@@ -208,7 +222,7 @@ ekwa_set_flags(struct ekwa_instruction *list)
 		ekwa_flags = flag;
 
 	#ifdef RUNTIME_DEBUG
-		printf("[I]: New flag, line %lu.\n", i - 1);
+		printf("\n[I]: New flag, line %lu.\n", i - 1);
 	#endif
 		tmp = tmp->next->next;
 	}
@@ -221,14 +235,14 @@ ekwa_get_flag(unsigned char *buffer)
 	uint16_t len = 0;
 
 	if (!buffer || buffer == NULL) {
-		printf("[E]: ekwa_get_flag args.\n");
+		printf("\n[E]: ekwa_get_flag args.\n");
 		exit(1);
 	}
 
 	memcpy(&len, buffer, sizeof(uint16_t));
 
 	if (len == 0) {
-		printf("[E]: Incorrect name of flag.\n");
+		printf("\n[E]: Incorrect name of flag.\n");
 		exit(1);
 	}
 
@@ -241,4 +255,22 @@ ekwa_get_flag(unsigned char *buffer)
 
 		return tmp;
 	}
+}
+
+void
+ekwa_arguments_clear(void)
+{
+	struct ekwa_arg *ptr = ekwa_args, *tmp;
+
+	if (!tmp || tmp == NULL) {
+		return;
+	}
+
+	while (ptr && ptr != NULL) {
+		tmp = ptr->next;
+		free(ptr);
+		ptr = tmp;
+	}
+
+	ekwa_args = NULL;
 }

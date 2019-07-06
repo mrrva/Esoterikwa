@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
 	ekwa_flags= NULL;
 	ekwa_vars = NULL;
 	ekwa_args = NULL;
+	ekwa_opts = NULL;
 
 	if (size < 3) {
 		printf("[E]: Instructions list is empty.\n");

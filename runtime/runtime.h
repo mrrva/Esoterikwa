@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <string.h>
+#include <dlfcn.h>
 
 #define RUNTIME_DEBUG true
 #define MAXBUFFER_LEN 4000
@@ -32,11 +33,6 @@ enum ekwa_tokens {
 	EKWA_END	= 0x10  // Last byte token.
 };
 
-struct ekwa_arg {
-	unsigned char arg[MAXBUFFER_LEN + sizeof(uint16_t)];
-	struct ekwa_arg *next;
-};
-
 struct ekwa_var {
 	unsigned char value[MAXBUFFER_LEN + sizeof(uint16_t)];
 	unsigned char name[MAXBUFFER_LEN + sizeof(uint16_t)];
@@ -56,9 +52,21 @@ struct ekwa_flag {
 	struct ekwa_flag *next;
 };
 
+struct ekwa_option {
+	unsigned char name[MAXBUFFER_LEN];
+	unsigned char value[MAXBUFFER_LEN];
+	struct ekwa_option *next;
+};
+
+struct ekwa_arg {
+	unsigned char value[MAXBUFFER_LEN + sizeof(uint16_t)];
+	struct ekwa_arg *next;
+};
+
 extern unsigned char _binary_instructions_start[];
 extern unsigned char _binary_instructions_end[];
 extern const size_t _binary_instructions_size;
+struct ekwa_option *ekwa_opts;
 struct ekwa_flag *ekwa_flags;
 struct ekwa_var *ekwa_vars;
 struct ekwa_arg *ekwa_args;
@@ -111,5 +119,14 @@ ekwa_token_name(enum ekwa_tokens);
 
 struct ekwa_var *
 ekwa_find_var(unsigned char *);
+
+void
+ekwa_token_remove_var(struct ekwa_instruction *);
+
+void
+ekwa_token_add_arg(struct ekwa_instruction *);
+
+void
+ekwa_token_call(struct ekwa_instruction *);
 
 #endif
