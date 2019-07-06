@@ -8,6 +8,8 @@ soft:
 tmodule:
 	gcc -c -Wall -fPIC tmodule.c
 	gcc -shared -o ekwatmodule.so tmodule.o
+	rm -f tmodule.o
 
 clear:
-	rm -f instructions.o ekwa_runtime program
+	rm -f instructions.o ekwa_runtime program tmodule.o \
+		ekwatmodule.so

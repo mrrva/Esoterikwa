@@ -67,7 +67,7 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 			break;
 
 		case EKWA_CALL:
-			ekwa_token_call(ptr);
+			ekwa_token_call(ptr, buffer);
 			ekwa_arguments_clear();
 			break;
 		}

@@ -1,5 +1,7 @@
-#-- Test of adding new var.
+#-- Info block.
 EKWA_INFO
+
+#-- Test of adding new var.
 EKWA_VAR	test_var	Hello World!
 EKWA_SHOW	test_var
 
@@ -21,11 +23,16 @@ EKWA_SHOW	cmp_var
 EKWA_RMV	test_var
 
 #-- Test of adding args.
-EKWA_VAR	libspath	./
-EKWA_ARG	libspath
+EKWA_VAR	test_arg	Test argument.
+EKWA_ARG	test_arg
+EKWA_RMV	test_arg
 
 #-- Test of calling functions.
 EKWA_CALL	tmodule.test
+
+#-- Test of getting value from func.
+EKWA_WRT	second
+EKWA_SHOW	second
 
 #-- Test of jumping.
 #EKWA_VAR	cycle_var	Test...

@@ -307,39 +307,21 @@ ekwa_token_add_arg(struct ekwa_instruction *line)
 #ifdef RUNTIME_DEBUG
 	printf("\n[I]: Added new argument.\n");
 #endif
-	/*arg->next = NULL;
-	arg->var = var;
-
-	if (!ekwa_args || ekwa_args == NULL) {
-	#ifdef RUNTIME_DEBUG
-		printf("\n[I]: Added new argument.\n");
-	#endif
-		ekwa_args = arg;
-		return;
-	}
-
-	tmp = ekwa_args;
-
-	while (tmp->next && tmp->next != NULL) {
-		tmp = tmp->next;
-	}
-
-	tmp->next = arg;
-#ifdef RUNTIME_DEBUG
-	printf("\n[I]: Added new argument.\n");
-#endif*/
 }
 
 bool
-ekwa_call_fromlib(char *ret, char *name)
+ekwa_call_fromlib(char *ret, char *name,
+				unsigned char *ret_buff)
 {
-	typedef void (*lfunc)();
+	typedef void *(*lfunc)();
 
+	size_t buff_size = MAXBUFFER_LEN + sizeof(uint16_t);
+	unsigned char *ret_val;
 	void *handle = NULL;
 	char *lname, *fname;
 	lfunc func = NULL;
 
-	if (!ret || !name) {
+	if (!ret || !name || !ret_buff) {
 		printf("\n[E]: ekwa_call_fromlib args.\n");
 		exit(1);
 	}
@@ -372,20 +354,25 @@ ekwa_call_fromlib(char *ret, char *name)
 		exit(1);
 	}
 
-	func(ekwa_args);
+	ret_val = (unsigned char *)func(ekwa_args);
+
+	if (ret_val && ret_val != NULL) {
+		memcpy(ret_buff, ret_val, buff_size);
+		free(ret_val);
+	}
 
 	free(lname);
 	free(fname);
 }
 
 void
-ekwa_token_call(struct ekwa_instruction *line)
+ekwa_token_call(struct ekwa_instruction *line,
+				unsigned char *ret_val)
 {
-	struct ekwa_functions *tmp = ekwa_funcs;
 	uint16_t len = 0;
 	char *name, *ret;
 
-	if (!line || line == NULL) {
+	if (!line || line == NULL || !ret_val) {
 		printf("\n[E]: ekwa_token_call args.\n");
 		exit(1);
 	}
@@ -412,11 +399,36 @@ ekwa_token_call(struct ekwa_instruction *line)
 #endif
 
 	if ((ret = strchr(name, '.'))) {
-		ekwa_call_fromlib(ret, name);
+		ekwa_call_fromlib(ret, name, ret_val);
 		return;
 	}
 
 	/**********STD LIB HERE *********/
+}
+
+void
+ekwa_token_rbuffer(struct ekwa_instruction *line,
+					unsigned char *ret_val)
+{
+	size_t buff_size = MAXBUFFER_LEN + sizeof(uint16_t);
+	struct ekwa_var *var;
+
+	if (!line || line == NULL || !ret_val
+		|| ret_val == NULL) {
+		printf("\n[E]: ekwa_token_rbuffer args.\n");
+		exit(1);
+	}
+
+	var = ekwa_find_var(line->arg1);
+
+	if (!var || var == NULL) {
+		ekwa_exception(line->token, var, true);
+	}
+
+	memcpy(var->value, ret_val, buff_size);
+#ifdef RUNTIME_DEBUG
+	printf("\n[I]: Return value was written.\n");
+#endif
 }
 
 char *
