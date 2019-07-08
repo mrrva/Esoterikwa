@@ -1,4 +1,6 @@
 
+all: soft tmodule
+
 soft:
 	gcc -c ekwa_main.c -o ekwa_runtime -march=x86-64
 	ld -r -b binary -o instructions.o instructions

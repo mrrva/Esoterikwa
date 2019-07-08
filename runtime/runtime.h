@@ -28,14 +28,32 @@ enum ekwa_tokens {
 	EKWA_INFO	= 0x0c, // Info about VM.
 	EKWA_SHOW	= 0x0d, // Print var value as a string.
 	EKWA_RMV	= 0x0e, // Remove var.
-	EKWA_TYPE	= 0x0f, // Set type of var.
-
+	EKWA_VAL	= 0x0f, // Set value of var.
+/*
+	EKWA_ADD	= 0x10,
+	EKWA_SUB	= 0x11,
+	EKWA_DIV	= 0x12,
+	EKWA_MOD	= 0x13,
+*/
 	EKWA_END	= 0x10
+};
+
+enum ekwa_types {
+	EKWA_BYTES	= 0x00,
+	EKWA_INT	= 0x01,
+	EKWA_FLOAT	= 0x02,
+	EKWA_CUSTOM	= 0x03
+};
+
+struct ekwa_buffer {
+	unsigned char data[MAXBUFFER_LEN + 1];
+	uint16_t length;
 };
 
 struct ekwa_var {
 	unsigned char value[MAXBUFFER_LEN + sizeof(uint16_t)];
-	unsigned char name[MAXBUFFER_LEN + sizeof(uint16_t)];
+	char name[MAXBUFFER_LEN + 1];
+	enum ekwa_types type;
 	struct ekwa_var *next;
 };
 
@@ -47,19 +65,20 @@ struct ekwa_instruction {
 };
 
 struct ekwa_flag {
-	unsigned char name[MAXBUFFER_LEN + sizeof(uint16_t)];
+	char name[MAXBUFFER_LEN + 1];
 	struct ekwa_instruction *point;
 	struct ekwa_flag *next;
 };
 
 struct ekwa_option {
-	unsigned char name[MAXBUFFER_LEN];
+	char name[MAXBUFFER_LEN + 1];
 	unsigned char value[MAXBUFFER_LEN];
 	struct ekwa_option *next;
 };
 
 struct ekwa_arg {
 	unsigned char value[MAXBUFFER_LEN + sizeof(uint16_t)];
+	enum ekwa_types type;
 	struct ekwa_arg *next;
 };
 
@@ -79,14 +98,10 @@ void
 ekwa_instruction_clear(struct ekwa_instruction **);
 
 struct ekwa_flag *
-ekwa_get_flag(unsigned char *);
+ekwa_get_flag(char *);
 
 void
 ekwa_virtual_machine(struct ekwa_instruction *);
-
-void
-ekwa_exception(enum ekwa_tokens, struct ekwa_var *,
-			bool);
 
 void
 ekwa_token_jump(struct ekwa_instruction **);
@@ -96,11 +111,11 @@ ekwa_set_flags(struct ekwa_instruction *);
 
 void
 ekwa_token_buffer(struct ekwa_instruction *,
-				unsigned char **);
+				struct ekwa_var *);
 
 void
 ekwa_token_write(struct ekwa_instruction *,
-				unsigned char *);
+				struct ekwa_var *);
 
 void
 ekwa_token_comparing(struct ekwa_instruction **);
@@ -118,7 +133,7 @@ char *
 ekwa_token_name(enum ekwa_tokens);
 
 struct ekwa_var *
-ekwa_find_var(unsigned char *);
+ekwa_find_var(char *);
 
 void
 ekwa_token_remove_var(struct ekwa_instruction *);
@@ -128,10 +143,31 @@ ekwa_token_add_arg(struct ekwa_instruction *);
 
 void
 ekwa_token_call(struct ekwa_instruction *,
-				unsigned char *);
+				struct ekwa_var *);
 
 void
 ekwa_token_rbuffer(struct ekwa_instruction *,
 					unsigned char *);
+
+struct ekwa_buffer
+ekwa_decode_buffer(unsigned char *);
+
+enum ekwa_types
+ekwa_detect_type(unsigned char *);
+
+void
+ekwa_token_set_value(struct ekwa_instruction *);
+
+int
+ekwa_buffer_to_int(unsigned char *);
+
+float
+ekwa_buffer_to_float(unsigned char *);
+
+void
+ekwa_token_ifsmaller(struct ekwa_instruction **);
+
+void
+ekwa_token_ifbigger(struct ekwa_instruction **);
 
 #endif

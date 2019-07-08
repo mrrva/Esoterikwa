@@ -10,21 +10,15 @@ ekwa_arguments_clear(void);
 void
 ekwa_virtual_machine(struct ekwa_instruction *list)
 {
-	size_t buff_size = MAXBUFFER_LEN + sizeof(uint16_t);
 	struct ekwa_instruction *ptr = list;
-	unsigned char *buffer;
+	struct ekwa_var buffer;
 
 	if (!list || list == NULL) {
 		printf("\n[E]: Instrunctions struct is empty.\n");
 		exit(1);
 	}
 
-	if (!(buffer = (unsigned char *)malloc(buff_size))) {
-		printf("\n[E]: Can't allocate memory.\n");
-		exit(1);
-	}
-
-	memset(buffer, 0x00, buff_size);
+	memset(&buffer, 0x00, sizeof(buffer));
 	ekwa_set_flags(list);
 
 	while (ptr && ptr != NULL) {
@@ -41,21 +35,21 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 			ekwa_token_var(ptr);
 			break;
 
+		case EKWA_VAL:
+			ekwa_token_set_value(ptr);
+			break;
+
 		case EKWA_BUFF:
 			ekwa_token_buffer(ptr, &buffer);
 			break;
 
 		case EKWA_WRT:
-			ekwa_token_write(ptr, buffer);
-			memset(buffer, 0x00, buff_size);
+			ekwa_token_write(ptr, &buffer);
+			memset(&buffer, 0x00, sizeof(buffer));
 			break;
 
 		case EKWA_JMP:
 			ekwa_token_jump(&ptr);
-			break;
-
-		case EKWA_CMP:
-			ekwa_token_comparing(&ptr);
 			break;
 
 		case EKWA_RMV:
@@ -67,8 +61,20 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 			break;
 
 		case EKWA_CALL:
-			ekwa_token_call(ptr, buffer);
+			ekwa_token_call(ptr, &buffer);
 			ekwa_arguments_clear();
+			break;
+
+		case EKWA_CMP:
+			ekwa_token_comparing(&ptr);
+			break;
+
+		case EKWA_IFS:
+			ekwa_token_ifsmaller(&ptr);
+			break;
+
+		case EKWA_IFB:
+			ekwa_token_ifbigger(&ptr);
 			break;
 		}
 
@@ -77,20 +83,18 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 }
 
 struct ekwa_var *
-ekwa_find_var(unsigned char *name)
+ekwa_find_var(char *name)
 {
 	struct ekwa_var *tmp = ekwa_vars;
-	uint16_t size;
+	uint16_t size = strlen(name);
 
-	if (!name || name == NULL) {
+	if (!name || name == NULL || size == 0
+		|| size > MAXBUFFER_LEN) {
 		return NULL;
 	}
 
-	memcpy(&size, name, sizeof(uint16_t));
-
 	while (tmp != NULL) {
-		if (memcmp(name + 2, tmp->name + 2,
-					size) == 0) {
+		if (strcmp(name, tmp->name) == 0) {
 			return tmp;
 		}
 
@@ -110,54 +114,6 @@ ekwa_new_var(struct ekwa_var *new)
 
 	new->next = ekwa_vars;
 	ekwa_vars = new;
-}
-
-void
-ekwa_exception(enum ekwa_tokens token, struct ekwa_var *var,
-			bool fatal)
-{
-	char *name = ekwa_token_name(token), *var_name;
-	uint16_t size;
-
-	if ((!var || var == NULL) && fatal) {
-		printf("\n[Exception]: Incorrect argument for "
-				"token %s\n", name);
-		exit(1);
-	}
-	else if ((!var || var == NULL) && !fatal) {
-		printf("\n[Exception]: Incorrect argument for "
-				"token %s\n", name);
-		return;
-	}
-
-	memcpy(&size, var->name, sizeof(uint16_t));
-	var_name = (char *)malloc(size + 1);
-
-	if (!var_name) {
-		printf("\n[E]: Can't allocate memory.\n");
-		exit(1);
-	}
-
-	if (size == 0 || size > MAXBUFFER_LEN) {
-		printf("\n[Exception]: Incorrect argument for "
-				"token %s\n", name);
-
-		if (fatal) {
-			exit(1);
-		}
-		return;
-	}
-
-	strncpy(var_name, var->name, size);
-	printf("\n[Exception]: Token: %s Var: %s", name,
-			var_name);
-
-	printf("[Var dump]:\n");
-	ekwa_hex_buffer(var->value);
-
-	if (fatal) {
-		exit(1);
-	}
 }
 
 void
@@ -187,9 +143,9 @@ ekwa_hex_buffer(unsigned char *buff)
 void
 ekwa_set_flags(struct ekwa_instruction *list)
 {
-	size_t bsize = MAXBUFFER_LEN + sizeof(uint16_t);
 	size_t i = 0, fsize = sizeof(struct ekwa_flag);
 	struct ekwa_instruction *tmp = list;
+	struct ekwa_buffer arg1;
 	struct ekwa_flag *flag;
 
 	if (!list || list == NULL) {
@@ -203,9 +159,12 @@ ekwa_set_flags(struct ekwa_instruction *list)
 			continue;
 		}
 
-		if (tmp->arg1[0] + tmp->arg1[1] == 0x00) {
-			printf("\n[E]: Inccorect flag in %lu line.\n",
-					i - 1);
+		arg1 = ekwa_decode_buffer(tmp->arg1);
+
+		if (arg1.length > MAXBUFFER_LEN
+			|| arg1.length == 0) {
+			printf("\n[E]: Inccorect flag in %lu line"
+					".\n", i - 1);
 			exit(1);
 		}
 
@@ -216,45 +175,41 @@ ekwa_set_flags(struct ekwa_instruction *list)
 			exit(1);
 		}
 
-		memcpy(flag->name, tmp->arg1, bsize);
+		strncpy(flag->name, arg1.data, arg1.length);
 		flag->next = ekwa_flags;
 		flag->point = tmp;
 		ekwa_flags = flag;
 
 	#ifdef RUNTIME_DEBUG
-		printf("\n[I]: New flag, line %lu.\n", i - 1);
+		printf("\n[I]: New flag %s. line: %ld.\n", 
+				flag->name, i - 1);
 	#endif
 		tmp = tmp->next->next;
 	}
 }
 
 struct ekwa_flag *
-ekwa_get_flag(unsigned char *buffer)
+ekwa_get_flag(char *name)
 {
 	struct ekwa_flag *tmp = ekwa_flags;
-	uint16_t len = 0;
+	size_t len = strlen(name);
 
-	if (!buffer || buffer == NULL) {
+	if (!name || name == NULL || len == 0
+		|| len > MAXBUFFER_LEN) {
 		printf("\n[E]: ekwa_get_flag args.\n");
 		exit(1);
 	}
 
-	memcpy(&len, buffer, sizeof(uint16_t));
-
-	if (len == 0) {
-		printf("\n[E]: Incorrect name of flag.\n");
-		exit(1);
-	}
-
 	while (tmp != NULL) {
-		if (memcmp(buffer + 2, tmp->name + 2,
-					len) != 0) {
+		if (strcmp(name, tmp->name) != 0) {
 			tmp = tmp->next;
 			continue;
 		}
 
 		return tmp;
 	}
+
+	return NULL;
 }
 
 void
@@ -273,4 +228,89 @@ ekwa_arguments_clear(void)
 	}
 
 	ekwa_args = NULL;
+}
+
+struct ekwa_buffer
+ekwa_decode_buffer(unsigned char *buffer)
+{
+	struct ekwa_buffer ret;
+
+	if (!buffer || buffer == NULL) {
+		printf("\n[E]: Can't decode buffer.\n");
+		exit(1);
+	}
+
+	memcpy(&ret.length, buffer, sizeof(uint16_t));
+	memset(ret.data, 0x00, ret.length + 20);
+	memcpy(ret.data, buffer + 2, ret.length);
+
+	if (ret.length > MAXBUFFER_LEN
+		|| ret.length == 0) {
+		printf("\n[E]: Incorrect buffer size.\n");
+		exit(1);
+	}
+
+	return ret;
+}
+
+enum ekwa_types
+ekwa_detect_type(unsigned char *buffer)
+{
+	uint16_t len = 0;
+
+	if (!buffer || buffer == NULL) {
+		return EKWA_BYTES;
+	}
+
+	memcpy(&len, buffer, sizeof(uint16_t));
+
+	if (len != 1) {
+		return EKWA_BYTES;
+	}
+
+	if (buffer[2] > EKWA_CUSTOM) {
+		return EKWA_BYTES;
+	}
+
+	return (enum ekwa_types)buffer[2];
+}
+
+int
+ekwa_buffer_to_int(unsigned char *buffer)
+{
+	uint16_t len = 0;
+	int value = 0;
+
+	if (!buffer || buffer == NULL) {
+		return 0;
+	}
+
+	memcpy(&len, buffer, sizeof(uint16_t));
+
+	if (len == 0) {
+		return 0;
+	}
+
+	memcpy(&value, buffer + 2, len);
+	return value;
+}
+
+float
+ekwa_buffer_to_float(unsigned char *buffer)
+{
+	uint16_t len = 0;
+	float value = 0;
+
+	if (!buffer || buffer == NULL) {
+		return 0;
+	}
+
+	memcpy(&len, buffer, sizeof(uint16_t));
+
+	if (len == 0) {
+		return 0;
+	}
+
+	memcpy(&value, buffer + 2, len);
+	return value;
 }

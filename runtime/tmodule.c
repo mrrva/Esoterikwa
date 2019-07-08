@@ -6,17 +6,26 @@
 
 #define BUFFSIZE 4000 + sizeof(uint16_t)
 
+enum ekwa_types {
+	EKWA_BYTES	= 0x00,
+	EKWA_INT	= 0x01,
+	EKWA_FLOAT	= 0x02,
+	EKWA_CUSTOM	= 0x03
+};
+
 struct ekwa_arg {
 	unsigned char value[BUFFSIZE];
+	enum ekwa_types type;
 	struct ekwa_arg *next;
 };
 
 void *
 ekwa_test(void *args)
 {
+	size_t size = sizeof(struct ekwa_arg);
 	struct ekwa_arg *ekwa_args;
-	unsigned char *retval;
-	uint16_t len = 0; 
+	struct ekwa_arg *new;
+	uint16_t len = 0;
 	char *str;
 
 	if (!args || args == NULL) {
@@ -25,31 +34,30 @@ ekwa_test(void *args)
 	}
 
 	ekwa_args = (struct ekwa_arg *)args;
-
 	memcpy(&len, ekwa_args->value, sizeof(uint16_t));
+
+	if (len == 0) {
+		printf("\nnekwa_test: Invalid len of first "
+				"argument.\n");
+		exit(1);
+	}
+
 	str = (char *)malloc(len + 1);
-
-	if (!str) {
-		printf("\n[E]: Can't allocate memory\n");
-		return NULL;
-	}
-
 	memcpy(str, ekwa_args->value + 2, len);
-	printf("ekwa_test: First arg is %.*s\n", len,
-			str);
 
-	retval = (unsigned char *)malloc(BUFFSIZE);
+	printf("\nekwa_test: %s\n", str);
 
-	if (!retval) {
-		printf("\n[E]: Can't allocate memory\n");
-		return NULL;
+	if (!(new = (struct ekwa_arg *)malloc(size))) {
+		printf("\n[E]: ekwa_test - can't allocate "
+				"memory.\n");
+		exit(1);
 	}
 
-	len = 17;
+	len = 13;
 
-	memcpy(retval, &len, sizeof(uint16_t));
-	memcpy(retval + 2, "From ekwa_test!\n\n", len);
+	memcpy(new->value + 2, "Hello world!", len);
+	memcpy(new->value, &len, sizeof(uint16_t));
+	new->type = EKWA_BYTES;
 
-	free(str);
-	return (void *)retval;
+	return (struct ekwa_arg *)new;
 }

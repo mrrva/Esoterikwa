@@ -18,9 +18,18 @@ $tokens = array(
 	"EKWA_INFO"	=> "\x0c",
 	"EKWA_SHOW"	=> "\x0d",
 	"EKWA_RMV"	=> "\x0e",
-	"EKWA_TYPE"	=> "\x0f",
+	"EKWA_VAL"	=> "\x0f",
 	"EKWA_END"	=> "\x10"
 );
+
+$types = array(
+	"EKWA_BYTES"	=> "\x00",
+	"EKWA_INT"		=> "\x01",
+	"EKWA_FLOAT"	=> "\x02",
+	"EKWA_CUSTOM"	=> "\x03"
+);
+
+$vars = array();
 
 foreach ($lines as $line) {
 	$elements = explode("\t", $line);
@@ -45,11 +54,37 @@ foreach ($lines as $line) {
 		continue;
 	}
 
+	if (isset($types[$elements[2]])
+		&& $elements[0] == "EKWA_VAR") {
+		$bytecode .= "\x00\x01";
+		$bytecode .= $types[$elements[2]];
+		$vars[$elements[1]] = $elements[2];
+		continue;
+	}
+
+	if ($elements[0] == "EKWA_VAL") {
+		if ($vars[$elements[1]] == "EKWA_INT") {
+			$d_bytes = pack('i', (int)$elements[2]);
+			$length = strlen($d_bytes);
+			$bytecode .= pack('n', $length);
+			$bytecode .= $d_bytes;
+			continue;
+		}
+		if ($vars[$elements[1]] == "EKWA_FLOAT") {
+			$d_bytes = pack('f', (float)$elements[2]);
+			$length = strlen($d_bytes);
+			$bytecode .= pack('n', $length);
+			$bytecode .= $d_bytes;
+			continue;
+		}
+	}
+
 	$length = strlen($elements[2]);
 	$bytecode .= pack('n', $length);
-	$bytecode .= $elements[2];
+	$bytecode .= (string)$elements[2];
 }
 
 $fp = fopen($filename, "wb");
 fwrite($fp, $bytecode);
 fclose($fp);
+

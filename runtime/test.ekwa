@@ -1,41 +1,85 @@
+##############################################
+#                                            #
+#   Esoterikwa Virtual Machine - June 2019.  #
+#                                            #
+#   This is a test script for checking       #
+#   process of wm working.                   #
+#                                            #
+#   This script will be translate to byte    #
+#   code.                                    #
+#                                            #
+#  (c) mrrva - github.com/mrrva              #
+#                                            #
+##############################################
+
 #-- Info block.
 EKWA_INFO
 
-#-- Test of adding new var.
-EKWA_VAR	test_var	Hello World!
-EKWA_SHOW	test_var
+#-- Creating of integer var.
+EKWA_VAR	int_data	EKWA_INT
+EKWA_VAL	int_data	12
+EKWA_SHOW	int_data
 
-#-- Test of variable assignment.
-EKWA_VAR	second
-EKWA_BUFF	test_var
-EKWA_WRT	second
-EKWA_SHOW	second
+#-- Creating of float var.
+EKWA_VAR	flt_data	EKWA_FLOAT
+EKWA_VAL	flt_data	32.2
+EKWA_SHOW	flt_data
 
-#-- Test of comparing.
-EKWA_VAR	cmp_var	randomdata
-EKWA_CMP	second	cmp_var
-EKWA_SHOW	cmp_var
-EKWA_VAR	second	randomdata
-EKWA_CMP	second	cmp_var
-EKWA_SHOW	cmp_var
+#-- Creating of float var.
+EKWA_VAR	byt_data	EKWA_BYTES
+EKWA_VAL	byt_data	Test string!
+EKWA_SHOW	byt_data
 
-#-- Test of var removing.
-EKWA_RMV	test_var
+#-- Variable assignment.
+EKWA_VAR	tmp_buff	EKWA_BYTES
+EKWA_BUFF	byt_data
+EKWA_WRT	tmp_buff
+EKWA_SHOW	tmp_buff
 
-#-- Test of adding args.
-EKWA_VAR	test_arg	Test argument.
-EKWA_ARG	test_arg
-EKWA_RMV	test_arg
+#-- Var removing.
+EKWA_RMV	tmp_buff
 
-#-- Test of calling functions.
+#-- Jump to flag.
+#EKWA_FSET	label_1
+#EKWA_SHOW	byt_data
+#EKWA_JMP	label_1
+
+#-- Adding args.
+EKWA_ARG	byt_data
+
+#-- Call test function from module.
 EKWA_CALL	tmodule.test
 
-#-- Test of getting value from func.
-EKWA_WRT	second
-EKWA_SHOW	second
+#-- Getting returned data from function.
+EKWA_WRT	byt_data
+EKWA_SHOW	byt_data
 
-#-- Test of jumping.
-#EKWA_VAR	cycle_var	Test...
-#EKWA_FSET	label1
-#EKWA_SHOW	cycle_var
-#EKWA_JMP	label1
+#-- Comparing integers.
+EKWA_VAR	int_comp	EKWA_INT
+EKWA_VAL	int_comp	12
+EKWA_VAL	byt_data	Good bro!
+EKWA_CMP	int_comp	int_data
+EKWA_SHOW	byt_data
+EKWA_SHOW	byt_data
+
+#-- Comparing bytes.
+EKWA_VAR	byt_comp	EKWA_BYTES
+EKWA_VAL	byt_data	Test string test!
+EKWA_VAL	byt_comp	Test string test!
+EKWA_CMP	byt_comp	byt_data
+EKWA_SHOW	byt_comp
+EKWA_SHOW	byt_comp
+
+#-- If one var is smoller.
+EKWA_VAL	int_comp	8
+EKWA_VAL	byt_data	EKWA_IFS works!!!
+EKWA_IFS	int_comp	int_data
+EKWA_SHOW	byt_data
+EKWA_SHOW	byt_data
+
+#-- If one var is bigger.
+EKWA_VAL	int_comp	100
+EKWA_VAL	byt_data	EKWA_IFB works!!!
+EKWA_IFB	int_comp	int_data
+EKWA_SHOW	byt_data
+EKWA_SHOW	byt_data
