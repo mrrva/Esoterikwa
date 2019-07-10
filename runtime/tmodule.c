@@ -59,5 +59,5 @@ ekwa_test(void *args)
 	memcpy(new->value, &len, sizeof(uint16_t));
 	new->type = EKWA_BYTES;
 
-	return (struct ekwa_arg *)new;
+	return (void *)new;
 }

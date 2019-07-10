@@ -83,3 +83,19 @@ EKWA_VAL	byt_data	EKWA_IFB works!!!
 EKWA_IFB	int_comp	int_data
 EKWA_SHOW	byt_data
 EKWA_SHOW	byt_data
+
+#-- Arithmetic operations.
+EKWA_VAR	add_resul	EKWA_INT
+EKWA_ADD	int_comp	int_data
+EKWA_WRT	add_resul
+EKWA_SHOW	add_resul
+
+EKWA_SUB	int_data	int_comp
+EKWA_WRT	add_resul
+EKWA_SHOW	add_resul
+
+EKWA_VAR	flt_tmpd	EKWA_FLOAT
+EKWA_VAL	flt_tmpd	32.2
+EKWA_SUB	flt_tmpd	flt_data
+EKWA_WRT	add_resul
+EKWA_SHOW	add_resul

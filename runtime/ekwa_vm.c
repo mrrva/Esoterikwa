@@ -76,6 +76,14 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 		case EKWA_IFB:
 			ekwa_token_ifbigger(&ptr);
 			break;
+
+		case EKWA_ADD:
+		case EKWA_SUB:
+		case EKWA_DIV:
+		case EKWA_MOD:
+		case EKWA_MUL:
+			ekwa_token_math(ptr, &buffer, ptr->token);
+			break;
 		}
 
 		ptr = ptr->next;
@@ -241,7 +249,7 @@ ekwa_decode_buffer(unsigned char *buffer)
 	}
 
 	memcpy(&ret.length, buffer, sizeof(uint16_t));
-	memset(ret.data, 0x00, ret.length + 20);
+	memset(ret.data, 0x00, MAXBUFFER_LEN + 1);
 	memcpy(ret.data, buffer + 2, ret.length);
 
 	if (ret.length > MAXBUFFER_LEN

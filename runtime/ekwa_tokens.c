@@ -127,7 +127,7 @@ ekwa_token_buffer(struct ekwa_instruction *line,
 
 	if (!var || var == NULL) {
 		printf("\n[W]: Can't find var in ekwa_token"
-				"_buffer.\n");
+				"_buffer: %s.\n", arg1.data);
 		return;
 	}
 
@@ -212,7 +212,7 @@ ekwa_token_remove_var(struct ekwa_instruction *line)
 
 	if (strcmp(arg1.data, tmp->name) == 0) {
 	#ifdef RUNTIME_DEBUG
-		printf("\n[I]: Removed %s var\n", tmp->name);
+		printf("\n[I]: Removed %s var.\n", tmp->name);
 	#endif
 		dat = ekwa_vars;
 		ekwa_vars = ekwa_vars->next;
@@ -223,7 +223,7 @@ ekwa_token_remove_var(struct ekwa_instruction *line)
 	while (tmp->next && tmp->next != NULL) {
 		if (strcmp(tmp->next->name, arg1.data) == 0) {
 		#ifdef RUNTIME_DEBUG
-			printf("\n[I]: Removed %s var\n", arg1.data);
+			printf("\n[I]: Removed %s var.\n", arg1.data);
 		#endif
 			dat = tmp->next;
 			tmp->next = tmp->next->next;
@@ -295,7 +295,7 @@ ekwa_call_fromlib(char *ret, char *name,
 	typedef void *(*lfunc)();
 
 	size_t buff_size = MAXBUFFER_LEN + sizeof(uint16_t);
-	struct ekwa_var *ret_val;
+	struct ekwa_var *ret_val = NULL;
 	void *handle = NULL;
 	char *lname, *fname;
 	lfunc func = NULL;
@@ -367,11 +367,7 @@ ekwa_token_call(struct ekwa_instruction *line,
 		return;
 	}
 
-
-
 	/*************** STD LIB ***************/
-
-
 }
 
 void
@@ -579,6 +575,107 @@ ekwa_token_ifbigger(struct ekwa_instruction **line)
 			}
 			*line = (*line)->next;
 		}
+		return;
+
+	default:
+		return;
+	}
+}
+
+void
+ekwa_token_math(struct ekwa_instruction *line,
+				struct ekwa_var *buffer,
+				enum ekwa_tokens type)
+{
+	struct ekwa_var *var1, *var2;
+	struct ekwa_buffer arg1, arg2;
+	float fval1, fval2, fres;
+	int ival1, ival2, ires;
+	uint16_t len = 0;
+
+	if (!line || line == NULL || !buffer) {
+		printf("\n[E]: ekwa_token_add args.\n");
+		exit(1);
+	}
+
+	arg1 = ekwa_decode_buffer(line->arg1);
+	arg2 = ekwa_decode_buffer(line->arg2);
+
+	var1 = ekwa_find_var(arg1.data);
+	var2 = ekwa_find_var(arg2.data);
+
+	if (!var1 || !var2 || var1 == NULL 
+		|| var2 == NULL) {
+		printf("\n[E]: Can't find vars in ekwa"
+				"_token_add.\n");
+		return;
+	}
+
+	if (var1->type != EKWA_FLOAT
+		&& var1->type != EKWA_INT) {
+		printf("\n[E]: Incorrect type for ekwa_token"
+				"_add.\n");
+		return;
+	}
+
+	if (var1->type != var2->type) {
+		printf("\n[E]: Incorrect type for ekwa_token"
+				"_add.\n");
+		return;
+	}
+
+	switch (var1->type) {
+	case EKWA_INT:
+		ival1 = ekwa_buffer_to_int(var1->value);
+		ival2 = ekwa_buffer_to_int(var2->value);
+
+		if (type == 0x10) {
+			ires = ival1 + ival2;
+		}
+		if (type == 0x11) {
+			ires = ival1 - ival2;
+		}
+		if (type == 0x04) {
+			ires = ival1 * ival2;
+		}
+		if (type == 0x12) {
+			ires = ival1 / ival2;
+		}
+		if (type == 0x13) {
+			ires = ival1 % ival2;
+		}
+
+		len = sizeof(ires);
+
+		memcpy(buffer->value, &len, sizeof(uint16_t));
+		memcpy(buffer->value + 2, &ires, len);
+		buffer->type = EKWA_INT;
+		return;
+
+	case EKWA_FLOAT:
+		fval1 = ekwa_buffer_to_float(var1->value);
+		fval2 = ekwa_buffer_to_float(var2->value);
+
+		if (type == 0x10) {
+			fres = fval1 + fval2;
+		}
+		if (type == 0x11) {
+			fres = fval1 - fval2;
+		}
+		if (type == 0x04) {
+			fres = fval1 * fval2;
+		}
+		if (type == 0x12) {
+			fres = fval1 / fval2;
+		}
+		/*if (type == 0x13) {
+			fres = fval1 % fval2;
+		}*/
+		len = sizeof(fres);
+
+		memcpy(buffer->value, &len, sizeof(uint16_t));
+		memcpy(buffer->value + 2, &fres, len);
+		buffer->type = EKWA_FLOAT;
 		return;
 
 	default:

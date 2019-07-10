@@ -29,13 +29,15 @@ enum ekwa_tokens {
 	EKWA_SHOW	= 0x0d, // Print var value as a string.
 	EKWA_RMV	= 0x0e, // Remove var.
 	EKWA_VAL	= 0x0f, // Set value of var.
-/*
+
+	/* Arithmetic operations */
 	EKWA_ADD	= 0x10,
 	EKWA_SUB	= 0x11,
 	EKWA_DIV	= 0x12,
 	EKWA_MOD	= 0x13,
-*/
-	EKWA_END	= 0x10
+	EKWA_MUL	= 0x14,
+
+	EKWA_END	= 0x15
 };
 
 enum ekwa_types {
@@ -169,5 +171,10 @@ ekwa_token_ifsmaller(struct ekwa_instruction **);
 
 void
 ekwa_token_ifbigger(struct ekwa_instruction **);
+
+void
+ekwa_token_math(struct ekwa_instruction *,
+				struct ekwa_var *,
+				enum ekwa_tokens);
 
 #endif

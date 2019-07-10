@@ -19,7 +19,13 @@ $tokens = array(
 	"EKWA_SHOW"	=> "\x0d",
 	"EKWA_RMV"	=> "\x0e",
 	"EKWA_VAL"	=> "\x0f",
-	"EKWA_END"	=> "\x10"
+	"EKWA_ADD"	=> "\x10",
+	"EKWA_SUB"	=> "\x11",
+	"EKWA_DIV"	=> "\x12",
+	"EKWA_MOD"	=> "\x13",
+	"EKWA_MUL"	=> "\x14",
+
+	"EKWA_END"	=> "\x15"
 );
 
 $types = array(
