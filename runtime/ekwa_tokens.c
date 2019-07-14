@@ -683,6 +683,51 @@ ekwa_token_math(struct ekwa_instruction *line,
 	}
 }
 
+void
+ekwa_token_concat(struct ekwa_instruction *line)
+{
+	struct ekwa_var *var1, *var2;
+	struct ekwa_buffer arg1, arg2, val1, val2;
+	uint16_t sum = 0;
+
+	if (!line || line == NULL) {
+		printf("\n[E]: ekwa_token_concat args.\n");
+		exit(1);
+	}
+
+	arg1 = ekwa_decode_buffer(line->arg1);
+	arg2 = ekwa_decode_buffer(line->arg2);
+
+	var1 = ekwa_find_var(arg1.data);
+	var2 = ekwa_find_var(arg2.data);
+
+	if (!var1 || !var2 || var1 == NULL 
+		|| var2 == NULL) {
+		printf("\n[E]: Can't find vars in ekwa"
+				"_token_concat.\n");
+		return;
+	}
+
+	val1 = ekwa_decode_buffer(var1->value);
+	val2 = ekwa_decode_buffer(var2->value);
+
+	if (val2.length == 0) {
+		return;
+	}
+
+	sum = val1.length + val2.length;
+
+	if (sum > MAXBUFFER_LEN) {
+		printf("\n[E]: Can't concate vars, end sum "
+				"of buffer is %d.\n", sum);
+		return;
+	}
+
+	memcpy(var1->value + 2 + val1.length, var2->value,
+			val2.length);
+	memcpy(var1->value, &sum, sizeof(uint16_t));
+}
+
 char *
 ekwa_token_name(enum ekwa_tokens token)
 {
