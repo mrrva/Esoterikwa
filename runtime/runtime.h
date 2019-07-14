@@ -37,7 +37,9 @@ enum ekwa_tokens {
 	EKWA_MOD	= 0x13,
 	EKWA_MUL	= 0x14,
 
-	EKWA_END	= 0x15
+	EKWA_CAT	= 0x15, // Concatenation.
+
+	EKWA_END	= 0x16
 };
 
 enum ekwa_types {
@@ -176,5 +178,8 @@ void
 ekwa_token_math(struct ekwa_instruction *,
 				struct ekwa_var *,
 				enum ekwa_tokens);
+
+void
+ekwa_token_concat(struct ekwa_instruction *);
 
 #endif
