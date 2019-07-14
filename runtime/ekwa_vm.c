@@ -84,6 +84,10 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 		case EKWA_MUL:
 			ekwa_token_math(ptr, &buffer, ptr->token);
 			break;
+
+		case EKWA_CAT:
+			ekwa_token_concat(ptr);
+			break;
 		}
 
 		ptr = ptr->next;
