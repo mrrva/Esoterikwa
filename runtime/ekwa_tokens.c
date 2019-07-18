@@ -665,12 +665,9 @@ ekwa_token_math(struct ekwa_instruction *line,
 		if (type == 0x04) {
 			fres = fval1 * fval2;
 		}
-		if (type == 0x12) {
+		if (type == 0x12 || type == 0x13) {
 			fres = fval1 / fval2;
 		}
-		/*if (type == 0x13) {
-			fres = fval1 % fval2;
-		}*/
 		len = sizeof(fres);
 
 		memcpy(buffer->value, &len, sizeof(uint16_t));
@@ -723,81 +720,13 @@ ekwa_token_concat(struct ekwa_instruction *line)
 		return;
 	}
 
-	memcpy(var1->value + 2 + val1.length, var2->value,
+	memcpy(var1->value + 2 + val1.length, val2.data,
 			val2.length);
 	memcpy(var1->value, &sum, sizeof(uint16_t));
 }
 
-char *
-ekwa_token_name(enum ekwa_tokens token)
+void
+ekwa_token_set_opt(struct ekwa_instruction *line)
 {
-	char *name;
-
-	if (token >= EKWA_END || token == 0x00) {
-		return NULL;
-	}
-
-	switch (token) {
-	case EKWA_VAR:
-		name = "EKWA_VAR";
-		break;
-
-	case EKWA_BUFF:
-		name = "EKWA_BUFF";
-		break;
-
-	case EKWA_ARG:
-		name = "EKWA_ARG";
-		break;
-
-	case EKWA_CALL:
-		name = "EKWA_CALL";
-		break;
-
-	case EKWA_JMP:
-		name = "EKWA_JMP";
-		break;
-
-	case EKWA_FSET:
-		name = "EKWA_FSET";
-		break;
-
-	case EKWA_WRT:
-		name = "EKWA_WRT";
-		break;
-
-	case EKWA_CMP:
-		name = "EKWA_CMP";
-		break;
-
-	case EKWA_IFS:
-		name = "EKWA_IFS";
-		break;
-
-	case EKWA_IFB:
-		name = "EKWA_IFB";
-		break;
-
-	case EKWA_INFO:
-		name = "EKWA_INFO";
-		break;
-
-	case EKWA_SHOW:
-		name = "EKWA_SHOW";
-		break;
-
-	case EKWA_RMV:
-		name = "EKWA_RMV";
-		break;
-
-	case EKWA_VAL:
-		name = "EKWA_VAL";
-		break;
-
-	default:
-		name = "EKWA_UNDECLARED";
-		break;
-	}
-
-	return name;
+	
 }

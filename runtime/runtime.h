@@ -38,8 +38,9 @@ enum ekwa_tokens {
 	EKWA_MUL	= 0x14,
 
 	EKWA_CAT	= 0x15, // Concatenation.
+	EKWA_OPT	= 0x16, // Set/reset vm options.
 
-	EKWA_END	= 0x16
+	EKWA_END	= 0x17
 };
 
 enum ekwa_types {
@@ -75,8 +76,8 @@ struct ekwa_flag {
 };
 
 struct ekwa_option {
+	unsigned char value[MAXBUFFER_LEN + sizeof(uint16_t)];
 	char name[MAXBUFFER_LEN + 1];
-	unsigned char value[MAXBUFFER_LEN];
 	struct ekwa_option *next;
 };
 
@@ -181,5 +182,17 @@ ekwa_token_math(struct ekwa_instruction *,
 
 void
 ekwa_token_concat(struct ekwa_instruction *);
+
+void
+ekwa_token_set_opt(struct ekwa_instruction *);
+
+void
+ekwa_set_option(char *, unsigned char *);
+
+void
+ekwa_set_default_opts(void);
+
+struct ekwa_option *
+ekwa_find_option(char *);
 
 #endif

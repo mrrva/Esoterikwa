@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	ekwa_set_default_opts();
 	ekwa_virtual_machine(ekwa_list);
 	ekwa_instruction_clear(&ekwa_list);
 

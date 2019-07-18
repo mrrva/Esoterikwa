@@ -88,6 +88,10 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 		case EKWA_CAT:
 			ekwa_token_concat(ptr);
 			break;
+
+		case EKWA_OPT:
+			ekwa_token_set_opt(ptr);
+			break;
 		}
 
 		ptr = ptr->next;
@@ -325,4 +329,78 @@ ekwa_buffer_to_float(unsigned char *buffer)
 
 	memcpy(&value, buffer + 2, len);
 	return value;
+}
+
+void
+ekwa_set_option(char *name, unsigned char *value)
+{
+	size_t b_size = MAXBUFFER_LEN + sizeof(uint16_t);
+	struct ekwa_option *opt = NULL;
+	size_t st_size = sizeof(struct ekwa_option);
+	uint16_t len = 0;
+
+	if (!name || name == NULL || !value
+		|| value == NULL) {
+		printf("\n[E]: Incorrect args in ekwa_set"
+			"_option.\n");
+		exit(1);
+	}
+
+	memcpy(&len, value, sizeof(uint16_t));
+
+	if (len > MAXBUFFER_LEN || len == 0) {
+		printf("\n[E]: Incorrect args in ekwa_set"
+			"_option.\n");
+		exit(1);
+	}
+
+#ifdef RUNTIME_DEBUG
+	printf("\n[I] New value for %s option.\n", name);
+#endif
+	if ((opt = ekwa_find_option(name)) != NULL) {
+		memcpy(opt->value, value, b_size);
+		return;
+	}
+
+	opt = (struct ekwa_option *)malloc(st_size);
+
+	if (!opt) {
+		printf("\n[E]: Can't allocate memory.\n");
+		exit(1);
+	}
+
+	memcpy(opt->value, value, b_size);
+	strcpy(opt->name, name);
+
+	opt->next = ekwa_opts;
+	ekwa_opts = opt;
+}
+
+struct ekwa_option *
+ekwa_find_option(char *name)
+{
+	struct ekwa_option *tmp = ekwa_opts;
+
+	while (tmp && tmp != NULL) {
+		if (strcmp(name, tmp->name) == 0) {
+			return tmp;
+		}
+
+		tmp = tmp->next;
+	}
+
+	return NULL;
+}
+
+void
+ekwa_set_default_opts(void)
+{
+	size_t b_size = MAXBUFFER_LEN + sizeof(uint16_t);
+	unsigned char buff[b_size];
+	uint16_t len = 2;
+
+	memcpy(buff, &len, sizeof(uint16_t));
+	memcpy(buff + 2, "./", 2);
+
+	ekwa_set_option("libs_path", buff);
 }

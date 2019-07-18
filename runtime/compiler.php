@@ -25,8 +25,9 @@ $tokens = array(
 	"EKWA_MOD"	=> "\x13",
 	"EKWA_MUL"	=> "\x14",
 	"EKWA_CAT"	=> "\x15",
+	"EKWA_OPT"	=> "\x16",
 
-	"EKWA_END"	=> "\x16"
+	"EKWA_END"	=> "\x17"
 );
 
 $types = array(

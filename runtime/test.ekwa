@@ -25,7 +25,7 @@ EKWA_VAR	flt_data	EKWA_FLOAT
 EKWA_VAL	flt_data	32.2
 EKWA_SHOW	flt_data
 
-#-- Creating of float var.
+#-- Creating of byte var.
 EKWA_VAR	byt_data	EKWA_BYTES
 EKWA_VAL	byt_data	Test string!
 EKWA_SHOW	byt_data
@@ -99,3 +99,16 @@ EKWA_VAL	flt_tmpd	32.2
 EKWA_SUB	flt_tmpd	flt_data
 EKWA_WRT	add_resul
 EKWA_SHOW	add_resul
+
+#-- Concat vars.
+EKWA_VAL	byt_data	Test: Hello 
+EKWA_VAL	byt_comp	world!
+EKWA_CAT	byt_data	byt_comp
+EKWA_SHOW	byt_data
+
+#-- Setting vm option.
+EKWA_VAR	opt_lpath	EKWA_BYTES
+EKWA_VAL	opt_lpath	./
+EKWA_VAR	opt_name	EKWA_BYTES
+EKWA_VAL	opt_name	libs_path
+EKWA_OPT	opt_name	opt_lpath
