@@ -1,0 +1,22 @@
+
+fn main
+{
+	string test = "some data"
+	string data = test
+	int integer = 10
+	int integer_2 = integer
+	float flvar = 12.1
+	auto fndata = tmodule.test(flvar, test, integer_2)
+
+	integer = 30
+
+	test += data
+	test += "ololo"
+
+	integer += integer_2
+
+	flvar += flvar
+	flvar -= 10.0
+
+	tmodule.test(flvar, test, integer_2)
+}

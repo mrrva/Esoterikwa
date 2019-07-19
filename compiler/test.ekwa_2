@@ -1,0 +1,53 @@
+
+import
+{
+	./src/functions
+	./src/constants
+	./src/data
+}
+
+fn something
+{
+	arg string var1
+	arg string var2
+
+	string value += var1
+	value += var2
+
+	return value
+}
+
+fn main
+{
+	string data = "orloment ?"
+	string ret = "yeah"
+	int i_var = 120
+
+	i_var -= 120
+	i_var += 310
+
+	if i_var == 300
+	{
+		if data != "NaN"
+		{
+			ret = something(data, ret)
+		}
+
+		ret = "chlen"
+	}
+
+	if i_var < 300
+	{
+		i_var = 100
+	}
+
+	i_var = 0
+
+	cycle i_var to 100
+	{
+		show(i_var)
+	}
+
+	string msg = "This is a test script."
+	show(msg)
+}

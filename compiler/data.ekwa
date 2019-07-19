@@ -1,0 +1,28 @@
+@import("./libs.ekwa")
+
+fn concat (string data1, string data2):
+	if data1 == "" or data2 == "":
+		return "Invalid arguments."
+
+	result = data1 + data2
+	return result
+
+fn main :
+	html = internet.content("https://google.com")
+	line = concat("hello ", "world")
+	content = fs.read("./data.txt")
+
+	fs.put("./data.txt", line, APPEND)
+
+	if html == "":
+		show("Can't connect to site.")
+
+	else if html == "LOL":
+		show("Google is sick now.")
+
+	for i = 0 to 100:
+		show(content[i])
+
+	while i != 40:
+		show("lol kek cheburek suka!")
+		i += 1
