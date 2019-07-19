@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 	//vector<_ekwa_function> f_list;
 	struct txtfunction one;
 	regex r_funcs(rgfns);
-	regex rpls("([\t])");
+	regex rpls("[\n][\t]");
 	_ekwa_instructions do_cmd;
 	_ekwa_function *f_class;
 	stringstream ss;
@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
 	text = ss.str();
 
 	while (regex_search(text, match, r_funcs)) {
-
+		one.body = match.str(3).substr(0, match.str(3).length() - 1);
+		one.body = regex_replace(one.body, rpls, "\n");
 		one.name = match.str(1);
-		one.body = regex_replace(match.str(3), rpls, "");
 
 		f_class = new _ekwa_function(one, do_cmd);
 		text = match.suffix();

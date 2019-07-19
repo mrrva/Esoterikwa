@@ -11,7 +11,7 @@ fn something
 	arg string var1
 	arg string var2
 
-	string value += var1
+	string value = var1
 	value += var2
 
 	return value

@@ -38,8 +38,8 @@ vector<struct ekwa_var> _ekwa_function::find_args(string s)
 
 void _ekwa_function::code_to_instructions(string code)
 {
-	vector<unsigned char *> buff;
 	stringstream ss(code);
+	size_t flag_n = 0;
 	smatch match;
 	string line;
 
@@ -48,6 +48,7 @@ void _ekwa_function::code_to_instructions(string code)
 	regex rg_2(rgvar_noinit);
 	regex rg_1(rgvar_init);
 	regex rg_5(rgcall_m);
+	regex rg_6(rg_conds);
 
 	while (getline(ss, line, '\n')) {
 		if (regex_search(line, match, rg_1)) {
@@ -73,7 +74,62 @@ void _ekwa_function::code_to_instructions(string code)
 					match.str(2));
 			continue;
 		}
+
+		if (regex_search(line, match, rg_6)) {
+			this->get_if(match.str(1), match.str(2),
+				match.str(3), ss, flag_n);
+			continue;
+		}
 	}
+}
+
+void _ekwa_function::get_if(string var, string cond, string val,
+	stringstream &ss, size_t &fnum)
+{
+	vector<unsigned char *> list, tmp;
+	string line, code(""), fn1, fn2;
+	enum ekwa_tokens tp = EKWA_CMP;
+	struct ekwa_var tvar;
+
+	if (!this->var_exists(var)) {
+		cout << "Error: 31.\n";
+		exit(1);
+	}
+
+	while (getline(ss, line, '\n')) {
+		if (line[0] == '\t') {
+			code += line.substr(1) + "\n";
+			continue;
+		}
+
+		if (line[0] == '{') {
+			continue;
+		}
+
+		break;
+	}
+
+	tvar = this->find_var(var);
+
+	if (cond == ">") {
+		tp = EKWA_IFB;
+	}
+
+	if (cond == "<") {
+		tp = EKWA_IFS;
+	}
+
+	//tmp = this->cmd.comparing(var, var_ 2, tp);
+	//list.insert(list.end(), tmp.begin(), tmp.end());
+
+	fn1 = "flag_" + to_string(fnum++);
+	fn2 = "flag_" + to_string(fnum++);
+
+	tmp = this->cmd.if_body(fn1, fn2);
+	list.insert(list.end(), tmp.begin(), tmp.end());
+
+	this->add_cmds(list);
+	exit(1);
 }
 
 void _ekwa_function::action_funcm_call(string name,
@@ -154,7 +210,7 @@ vector<unsigned char *> _ekwa_function::action_var_int_mn(string name,
 		tvar = this->find_var(match.str(1));
 
 		if (tvar.type != EKWA_INT) {
-			cout << "Error: 28.\n";
+			cout << "Error: 29.\n";
 			exit(1);
 		}
 		// Call `sub` token

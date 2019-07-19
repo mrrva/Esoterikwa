@@ -282,3 +282,72 @@ vector<unsigned char *> _ekwa_instructions::minus(string v1,
 	list.push_back(cmd);
 	return list;
 }
+
+vector<unsigned char *> _ekwa_instructions::if_body(string f1,
+	string f2)
+{
+	uint16_t f1len = f1.length(), f2len = f2.length();
+	vector<unsigned char *> list;
+	unsigned char *cmd, token = EKWA_JMP;
+	const char *f1_c = f1.c_str(), *f2_c = f2.c_str();
+
+	if (f1len == 0 || f1len > MAXBUFFER_LEN || f2len == 0
+		|| f2len > MAXBUFFER_LEN) {
+		cout << "Error: 30.\n";
+		exit(1);
+	}
+
+	cmd = new unsigned char[f1len + 200];
+	memset(cmd, 0x00, f1len + 200);
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &f1len, 2);
+	memcpy(cmd + 3, f1_c, f1len);
+	list.push_back(cmd);
+
+
+	cmd = new unsigned char[f2len + 200];
+	memset(cmd, 0x00, f2len + 200);
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &f2len, 2);
+	memcpy(cmd + 3, f2_c, f2len);
+	list.push_back(cmd);
+
+	cmd = new unsigned char[f2len + 200];
+	memset(cmd, 0x00, f2len + 200);
+	token = EKWA_FSET;
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &f1len, 2);
+	memcpy(cmd + 3, f1_c, f1len);
+	list.push_back(cmd);
+
+	return list;
+}
+
+vector<unsigned char *> _ekwa_instructions::comparing(string v1,
+	string v2, enum ekwa_tokens tp)
+{
+	uint16_t v1len = v1.length(), v2len = v2.length();
+	vector<unsigned char *> list;
+	unsigned char *cmd, token = tp;
+	const char *v1_c = v1.c_str(), *v2_c = v2.c_str();
+
+	if (v1len == 0 || v1len > MAXBUFFER_LEN || v2len == 0
+		|| v2len > MAXBUFFER_LEN) {
+		cout << "Error: 32.\n";
+		exit(1);
+	}
+
+	cmd = new unsigned char[v2len + v1len + 100];
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &v1len, 2);
+	memcpy(cmd + 3, v1_c, v1len);
+	memcpy(cmd + 3 + v1len, &v2len, 2);
+	memcpy(cmd + 5 + v1len, v2_c, v2len);
+
+	list.push_back(cmd);
+	return list;
+}

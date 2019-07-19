@@ -24,6 +24,7 @@ const string rgvar_noinit = "^([a-zA-Z0-9_]+) = (.+)";
 const string rgvar_noinit_plus = "^([a-zA-Z0-9_]+) [+]= (.+)";
 const string rgvar_noinit_minus = "^([a-zA-Z0-9_]+) [-]= (.+)";
 const string rgcall_m = "^([a-zA-Z0-0_]+[.][a-zA-Z0-9]+)[(](.*[)])$";
+const string rg_conds = "^if (.+) ([=][=]|[!][=]|[<]|[>]) (.+)$";
 
 enum ekwa_tokens {
 	EKWA_VAR	= 0x01, // New var.
@@ -82,8 +83,10 @@ class _ekwa_instructions
 		vector<unsigned char *> minus(string, string);
 		vector<unsigned char *> from_buffer_to(string);
 		vector<unsigned char *> concat(string, string);
+		vector<unsigned char *> if_body(string, string);
 		vector<unsigned char *> new_var(string, enum ekwa_types);
 		vector<unsigned char *> set_value(string, string, enum ekwa_types);
+		vector<unsigned char *> comparing(string, string, enum ekwa_tokens);
 };
 
 class _ekwa_function
@@ -95,6 +98,7 @@ class _ekwa_function
 		_ekwa_instructions cmd;
 		string name;
 
+		void get_if(string, string, string, stringstream &, size_t &);
 		vector<unsigned char *> action_var_string_pl(string, string);
 		vector<unsigned char *> action_var_float_pl(string, string);
 		vector<unsigned char *> action_var_float_mn(string, string);

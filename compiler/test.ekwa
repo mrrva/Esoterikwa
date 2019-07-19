@@ -19,4 +19,9 @@ fn main
 	flvar -= 10.0
 
 	tmodule.test(flvar, test, integer_2)
+
+	if flvar == 10.3
+	{
+		test = "here you are!"
+	}
 }
