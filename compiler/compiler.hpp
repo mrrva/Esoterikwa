@@ -25,6 +25,10 @@ const string rgvar_noinit_minus = "^([a-zA-Z0-9_]+) [-]= (.+)";
 const string rgvar_noinit_plus = "^([a-zA-Z0-9_]+) [+]= (.+)";
 const string rg_if = "^if (.+) ([=][=]|[!][=]|[<]|[>]) (.+)$";
 const string rgvar_noinit = "^([a-zA-Z0-9_]+) = (.+)";
+const string rg_show = "^show[(]([a-zA-Z0-9_]+)[)]$";
+const string rg_break = "^break$";
+const string rg_exit = "^exit$";
+const string rg_loop = "^loop$";
 
 enum ekwa_tokens {
 	EKWA_VAR	= 0x01, // New var.
@@ -78,6 +82,9 @@ struct ekwa_var {
 class _ekwa_instructions
 {
 	public :
+		vector<unsigned char *> exit_s(void);
+		vector<unsigned char *> show(string);
+		vector<unsigned char *> jump(string);
 		vector<unsigned char *> to_arg(string);
 		vector<unsigned char *> flag_set(string);
 		vector<unsigned char *> to_buffer(string);
@@ -88,6 +95,7 @@ class _ekwa_instructions
 		vector<unsigned char *> from_buffer_to(string);
 		vector<unsigned char *> concat(string, string);
 		vector<unsigned char *> if_body(string, string);
+		vector<unsigned char *> loop_end(string, string);
 		vector<unsigned char *> new_var(string, enum ekwa_types);
 		vector<unsigned char *> set_value(string, string, enum ekwa_types);
 		vector<unsigned char *> comparing(string, string, enum ekwa_tokens);
@@ -118,6 +126,7 @@ class _ekwa_function
 		void change_type(string, enum ekwa_types);
 		void action_var_noinit_pl(string, string);
 		void action_var_noinit_mn(string, string);
+		void get_loop(stringstream &, size_t &);
 		void action_funcm_call(string, string);
 		void add_cmds(vector<unsigned char *>);
 		void action_var_noinit(string, string);
@@ -127,10 +136,14 @@ class _ekwa_function
 		struct ekwa_var find_var(string);
 		void add_arg(struct ekwa_var);
 		void print(unsigned char *);
+		void action_show(string);
 		bool var_exists(string);
+		void set_jump(void);
+		void set_exit(void);
 
 	public :
 		_ekwa_function(struct txtfunction, _ekwa_instructions);
+		void write_file(string);
 };
 
 #endif

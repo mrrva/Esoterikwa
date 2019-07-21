@@ -126,7 +126,7 @@ ekwa_token_write(struct ekwa_instruction *,
 				struct ekwa_var *);
 
 void
-ekwa_token_comparing(struct ekwa_instruction **);
+ekwa_token_equal(struct ekwa_instruction **);
 
 void
 ekwa_token_show(struct ekwa_instruction *);
@@ -200,5 +200,8 @@ ekwa_find_option(char *);
 
 void
 ekwa_token_notequal(struct ekwa_instruction **);
+
+void
+ekwa_show_all_vars(void);
 
 #endif

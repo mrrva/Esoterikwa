@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
 		one.name = match.str(1);
 
 		f_class = new _ekwa_function(one, do_cmd);
+		f_class->write_file("./instructions");
 		text = match.suffix();
 	}
 }

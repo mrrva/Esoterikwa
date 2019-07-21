@@ -44,6 +44,7 @@ ekwa_token_show(struct ekwa_instruction *line)
 	}
 
 	strncpy(value, print.data, print.length);
+	value[print.length] = 0x00;
 	printf("%s\n", value);
 	free(value);
 }
@@ -74,7 +75,10 @@ ekwa_token_var(struct ekwa_instruction *line)
 		exit(1);
 	}
 
+	memset(var->name, 0x00, MAXBUFFER_LEN + 1);
 	strncpy(var->name, arg1.data, arg1.length);
+	var->name[arg1.length] = 0x00;
+
 	var->type = ekwa_detect_type(line->arg2);
 	memset(var->value, 0x00, 3);
 	ekwa_new_var(var);
@@ -159,7 +163,7 @@ ekwa_token_write(struct ekwa_instruction *line,
 		return;
 	}
 
-	strncpy(buffer->name, arg1.data, arg1.length);
+	strcpy(buffer->name, var->name);
 	buffer->next = var->next;
 
 	memcpy(var, buffer, copy_size);
@@ -212,7 +216,7 @@ ekwa_token_remove_var(struct ekwa_instruction *line)
 
 	if (strcmp(arg1.data, tmp->name) == 0) {
 	#ifdef RUNTIME_DEBUG
-		printf("\n[I]: Removed %s var.\n", tmp->name);
+		printf("\n[I]: %s var is removed.\n", tmp->name);
 	#endif
 		dat = ekwa_vars;
 		ekwa_vars = ekwa_vars->next;
@@ -223,7 +227,7 @@ ekwa_token_remove_var(struct ekwa_instruction *line)
 	while (tmp->next && tmp->next != NULL) {
 		if (strcmp(tmp->next->name, arg1.data) == 0) {
 		#ifdef RUNTIME_DEBUG
-			printf("\n[I]: Removed %s var.\n", arg1.data);
+			printf("\n[I]: %s var is removed.\n", arg1.data);
 		#endif
 			dat = tmp->next;
 			tmp->next = tmp->next->next;
@@ -371,7 +375,7 @@ ekwa_token_call(struct ekwa_instruction *line,
 }
 
 void
-ekwa_token_comparing(struct ekwa_instruction **line)
+ekwa_token_equal(struct ekwa_instruction **line)
 {
 	struct ekwa_buffer arg1, arg2;
 	struct ekwa_var *var1, *var2;
@@ -380,7 +384,7 @@ ekwa_token_comparing(struct ekwa_instruction **line)
 	int ival1, ival2;
 
 	if (!(*line) || (*line) == NULL) {
-		printf("\n[E]: ekwa_token_comparing args.\n");
+		printf("\n[E]: ekwa_token_equal args.\n");
 		exit(1);
 	}
 

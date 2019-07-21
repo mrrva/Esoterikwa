@@ -12,6 +12,7 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 {
 	struct ekwa_instruction *ptr = list;
 	struct ekwa_var buffer;
+	size_t line = 0;
 
 	if (!list || list == NULL) {
 		printf("\n[E]: Instrunctions struct is empty.\n");
@@ -22,6 +23,11 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 	ekwa_set_flags(list);
 
 	while (ptr && ptr != NULL) {
+	#ifdef RUNTIME_DEBUG
+		printf("\n[I]: Current line: %ld.\n", line);
+		ekwa_show_all_vars();
+		line++;
+	#endif
 		switch (ptr->token) {
 		case EKWA_INFO:
 			printf(INFO_BLOCK);
@@ -66,7 +72,7 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 			break;
 
 		case EKWA_IFE:
-			ekwa_token_comparing(&ptr);
+			ekwa_token_equal(&ptr);
 			break;
 
 		case EKWA_IFS:
@@ -410,4 +416,18 @@ ekwa_set_default_opts(void)
 	memcpy(buff + 2, "./", 2);
 
 	ekwa_set_option("libs_path", buff);
+}
+
+void
+ekwa_show_all_vars(void)
+{
+	struct ekwa_var *var = ekwa_vars;
+	struct ekwa_buffer buff;
+
+	while (var && var != NULL) {
+		printf("%s -> ", var->name);
+		var = var->next;
+	}
+
+	printf("\n");
 }

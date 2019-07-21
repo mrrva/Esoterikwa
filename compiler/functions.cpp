@@ -1,6 +1,8 @@
 
 #include "compiler.hpp"
 
+string jmp_br = "";
+
 _ekwa_function::_ekwa_function(struct txtfunction data,
 	_ekwa_instructions do_cmd)
 {
@@ -47,7 +49,11 @@ void _ekwa_function::code_to_instructions(string code)
 	regex rg_3(rgvar_noinit_plus);
 	regex rg_2(rgvar_noinit);
 	regex rg_1(rgvar_init);
+	regex rg_10(rg_show);
 	regex rg_5(rgcall_m);
+	regex rg_8(rg_break);
+	regex rg_7(rg_loop);
+	regex rg_9(rg_exit);
 	regex rg_6(rg_if);
 
 	while (getline(ss, line, '\n')) {
@@ -81,12 +87,107 @@ void _ekwa_function::code_to_instructions(string code)
 			continue;
 		}
 
+		if (regex_search(line, match, rg_7)) {
+			this->get_loop(ss, flag_n);
+			continue;
+		}
+
 		if (regex_search(line, match, rg_2)) {
 			this->action_var_noinit(match.str(1),
 				match.str(2));
 			continue;
 		}
+
+		if (regex_search(line, match, rg_8)) {
+			this->set_jump();
+			continue;
+		}
+
+		if (regex_search(line, match, rg_9)) {
+			this->set_exit();
+			continue;
+		}
+
+		if (regex_search(line, match, rg_10)) {
+			this->action_show(match.str(1));
+			continue;
+		}
 	}
+}
+
+void _ekwa_function::action_show(string var)
+{
+	vector<unsigned char *> list;
+
+	if (!this->var_exists(var)) {
+		cout << "Error: 35.\n";
+		exit(1);
+	}
+
+	list = this->cmd.show(var);
+	this->add_cmds(list);
+}
+
+void _ekwa_function::set_exit(void)
+{
+	vector<unsigned char *> list;
+
+	list = this->cmd.exit_s();
+	this->add_cmds(list);
+}
+
+void _ekwa_function::set_jump(void)
+{
+	vector<unsigned char *> list, tmp;
+
+	if (jmp_br.length() < 5) {
+		cout << "Error: 33.\n";
+		exit(1);
+	}
+
+	tmp = this->cmd.jump(jmp_br);
+	list.insert(list.end(), tmp.begin(), tmp.end());
+
+	jmp_br = string();
+	this->add_cmds(list);
+}
+
+void _ekwa_function::get_loop(stringstream &ss, size_t &fnum)
+{
+	vector<unsigned char *> list, tmp;
+	string line, code(""), fn1, fn2;
+
+	while (getline(ss, line, '\n')) {
+		if (line[0] == '\t') {
+			code += line.substr(1) + "\n";
+			continue;
+		}
+
+		if (line[0] == '{') {
+			continue;
+		}
+
+		if (line[0] == '}') {
+			break;
+		}
+	}
+
+	fn1 = "_" + this->name + "_flag_" + to_string(fnum++);
+	fn2 = "_" + this->name + "_flag_" + to_string(fnum++);
+
+	tmp = this->cmd.flag_set(fn1);
+	list.insert(list.end(), tmp.begin(), tmp.end());
+
+	jmp_br = fn2;
+	this->add_cmds(list);
+	list.erase(list.begin(), list.end());
+	// code to bytes ..
+	this->code_to_instructions(code);
+
+	tmp = this->cmd.loop_end(fn1, fn2);
+	list.insert(list.end(), tmp.begin(), tmp.end());
+
+	this->add_cmds(list);
 }
 
 void _ekwa_function::get_if(string var, string cond, string val,
@@ -119,7 +220,9 @@ void _ekwa_function::get_if(string var, string cond, string val,
 			continue;
 		}
 
-		break;
+		if (line[0] == '}') {
+			break;
+		}
 	}
 
 	tvar = this->find_var(var);
@@ -183,8 +286,8 @@ void _ekwa_function::get_if(string var, string cond, string val,
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
-	fn1 = "flag_" + to_string(fnum++);
-	fn2 = "flag_" + to_string(fnum++);
+	fn1 = "_" + this->name + "_flag_" + to_string(fnum++);
+	fn2 = "_" + this->name + "_flag_" + to_string(fnum++);
 
 	tmp = this->cmd.if_body(fn1, fn2);
 	list.insert(list.end(), tmp.begin(), tmp.end());
@@ -875,12 +978,6 @@ struct ekwa_var _ekwa_function::find_var(string name)
 
 void _ekwa_function::add_cmds(vector<unsigned char *> cmds)
 {
-	for (unsigned char *p : cmds) {
-		this->print(p);
-	}
-
-	cout << "=============================================\n";
-
 	this->instructions.insert(this->instructions.end(),
 		cmds.begin(), cmds.end());
 }
@@ -894,6 +991,11 @@ void _ekwa_function::print(unsigned char *list)
 		<< hex <<  + *(list + 2) << "\t";
 
 	memcpy(&len, list + 1, sizeof(uint16_t));
+
+	if (len == 0) {
+		cout << endl;
+		return;
+	}
 
 	for (size_t i = 0; i < len; i++) {
 		cout << hex << + list[i + 3] << " ";
@@ -910,4 +1012,59 @@ void _ekwa_function::print(unsigned char *list)
 	}
 
 	cout << endl;
+}
+
+void _ekwa_function::write_file(string file)
+{
+	unsigned char *buffer;
+	enum ekwa_tokens token;
+	uint16_t len = 0, len2 = 0;
+	ofstream write_s(file, ofstream::binary);
+
+	if (!write_s.is_open()) {
+		cout << "Can't open file for writing bytecode.\n";
+		exit(1);
+	}
+
+	for (unsigned char *p : this->instructions) {
+		this->print(p);
+		// token
+		memcpy(&token, p, 1);
+		write_s.write(reinterpret_cast<char *>(&token), 1);
+
+		// length
+		memcpy(&len, p + 1, sizeof(uint16_t));
+		write_s.write(reinterpret_cast<char *>(p + 1), sizeof(uint16_t));
+
+		if (len == 0) {
+			this->print(p);
+			continue;
+		}
+
+		buffer = new unsigned char[len + 1];
+
+		// copy & write data
+		memcpy(buffer, p + 3, len);
+		write_s.write(reinterpret_cast<char *>(buffer), len);
+
+		// get length of second arg
+		memcpy(&len2, p + 3 + len, sizeof(uint16_t));
+		write_s.write(reinterpret_cast<char *>(p + 3 + len), sizeof(uint16_t));
+
+		delete[] buffer;
+
+		if (len2 == 0) {
+			continue;
+		}
+
+		buffer = new unsigned char[len2 + 1];
+
+		// copy & write data
+		memcpy(buffer, p + 5 + len, len2);
+		write_s.write(reinterpret_cast<char *>(buffer), len2);
+
+		delete[] buffer;
+	}
+
+	write_s.close();
 }

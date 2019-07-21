@@ -374,3 +374,97 @@ vector<unsigned char *> _ekwa_instructions::flag_set(string name)
 	list.push_back(cmd);
 	return list;
 }
+
+vector<unsigned char *> _ekwa_instructions::loop_end(string f1,
+	string f2)
+{
+	uint16_t f1len = f1.length(), f2len = f2.length();
+	vector<unsigned char *> list;
+	unsigned char *cmd, token = EKWA_JMP;
+	const char *f1_c = f1.c_str(), *f2_c = f2.c_str();
+
+	if (f1len == 0 || f1len > MAXBUFFER_LEN || f2len == 0
+		|| f2len > MAXBUFFER_LEN) {
+		cout << "Error: 30.\n";
+		exit(1);
+	}
+
+	cmd = new unsigned char[f1len + 200];
+	memset(cmd, 0x00, f1len + 200);
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &f1len, 2);
+	memcpy(cmd + 3, f1_c, f1len);
+	list.push_back(cmd);
+
+	cmd = new unsigned char[f2len + 200];
+	memset(cmd, 0x00, f2len + 200);
+	token = EKWA_FSET;
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &f2len, 2);
+	memcpy(cmd + 3, f2_c, f2len);
+	list.push_back(cmd);
+
+	return list;
+}
+
+vector<unsigned char *> _ekwa_instructions::jump(string flag)
+{
+	unsigned char *cmd, token = EKWA_JMP;
+	const char *cname = flag.c_str();
+	vector<unsigned char *> list;
+	uint16_t len = flag.length();
+
+	if (len > MAXBUFFER_LEN || len == 0) {
+		cout << "Error: 34.\n";
+		exit(1);
+	}
+
+	cmd = new unsigned char[len + 100];
+	memset(cmd, 0x00, len + 100);
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &len, 2);
+	memcpy(cmd + 3, cname, len);
+
+	list.push_back(cmd);
+	return list;
+}
+
+vector<unsigned char *> _ekwa_instructions::exit_s(void)
+{
+	unsigned char *cmd, token = EKWA_EXIT;
+	vector<unsigned char *> list;
+
+	cmd = new unsigned char[100];
+	memset(cmd, 0x00, 100);
+
+	memcpy(cmd, &token, 1);
+	list.push_back(cmd);
+
+	return list;
+}
+
+vector<unsigned char *> _ekwa_instructions::show(string name)
+{
+	unsigned char *cmd, token = EKWA_SHOW;
+	const char *cname = name.c_str();
+	vector<unsigned char *> list;
+	uint16_t len = name.length();
+
+	if (len > MAXBUFFER_LEN || len == 0) {
+		cout << "Error: 36.\n";
+		exit(1);
+	}
+
+	cmd = new unsigned char[len + 100];
+	memset(cmd, 0x00, len + 100);
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &len, 2);
+	memcpy(cmd + 3, cname, len);
+
+	list.push_back(cmd);
+	return list;
+}

@@ -34,7 +34,7 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 
 		memcpy(&len, ptr, sizeof(uint16_t));
 		ptr += sizeof(uint16_t);
-		len >>= 8;
+		//len >>= 8;
 
 		if (len > MAXBUFFER_LEN || !ptr) {
 			printf("[E]: Invalid arg 1 for %x"
@@ -60,7 +60,7 @@ ekwa_frombytecode(struct ekwa_instruction **list,
 
 		memcpy(&len, ptr, sizeof(uint16_t));
 		ptr += sizeof(uint16_t);
-		len >>= 8;
+		//len >>= 8;
 
 		if (len > MAXBUFFER_LEN || !ptr) {
 			printf("[E]: Invalid arg 2 for %x"

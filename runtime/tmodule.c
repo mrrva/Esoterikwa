@@ -44,6 +44,7 @@ ekwa_test(void *args)
 
 	str = (char *)malloc(len + 1);
 	memcpy(str, ekwa_args->value + 2, len);
+	str[len] = 0x00;
 
 	printf("\nekwa_test: %s\n", str);
 
