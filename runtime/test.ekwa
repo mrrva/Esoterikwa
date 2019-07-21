@@ -58,7 +58,7 @@ EKWA_SHOW	byt_data
 EKWA_VAR	int_comp	EKWA_INT
 EKWA_VAL	int_comp	12
 EKWA_VAL	byt_data	Good bro!
-EKWA_CMP	int_comp	int_data
+EKWA_IFE	int_comp	int_data
 EKWA_SHOW	byt_data
 EKWA_SHOW	byt_data
 
@@ -66,7 +66,7 @@ EKWA_SHOW	byt_data
 EKWA_VAR	byt_comp	EKWA_BYTES
 EKWA_VAL	byt_data	Test string test!
 EKWA_VAL	byt_comp	Test string test!
-EKWA_CMP	byt_comp	byt_data
+EKWA_IFE	byt_comp	byt_data
 EKWA_SHOW	byt_comp
 EKWA_SHOW	byt_comp
 

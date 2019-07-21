@@ -48,7 +48,7 @@ void _ekwa_function::code_to_instructions(string code)
 	regex rg_2(rgvar_noinit);
 	regex rg_1(rgvar_init);
 	regex rg_5(rgcall_m);
-	regex rg_6(rg_conds);
+	regex rg_6(rg_if);
 
 	while (getline(ss, line, '\n')) {
 		if (regex_search(line, match, rg_1)) {
@@ -80,6 +80,12 @@ void _ekwa_function::code_to_instructions(string code)
 				match.str(3), ss, flag_n);
 			continue;
 		}
+
+		if (regex_search(line, match, rg_2)) {
+			this->action_var_noinit(match.str(1),
+				match.str(2));
+			continue;
+		}
 	}
 }
 
@@ -88,8 +94,15 @@ void _ekwa_function::get_if(string var, string cond, string val,
 {
 	vector<unsigned char *> list, tmp;
 	string line, code(""), fn1, fn2;
-	enum ekwa_tokens tp = EKWA_CMP;
+	enum ekwa_tokens tp = EKWA_IFE;
 	struct ekwa_var tvar;
+	smatch match;
+	regex rg_flt("^([0-9]+[.][0-9]+)$");
+	regex rg_var("^([a-zA-Z0-9_]+)$");
+	regex rg_str("^[\"](.*)[\"]$");
+	regex rg_int("^([0-9]+)$");
+	string tmp_name = "_get_if_var";
+	bool tmp_n = false;
 
 	if (!this->var_exists(var)) {
 		cout << "Error: 31.\n";
@@ -119,17 +132,76 @@ void _ekwa_function::get_if(string var, string cond, string val,
 		tp = EKWA_IFS;
 	}
 
-	//tmp = this->cmd.comparing(var, var_ 2, tp);
-	//list.insert(list.end(), tmp.begin(), tmp.end());
+	if (cond == "!=") {
+		tp = EKWA_IFNE;
+	}
+
+	if (regex_search(val, match, rg_int)) {
+		tmp = this->cmd.new_var(tmp_name, EKWA_INT);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp = this->cmd.set_value(tmp_name, val, EKWA_INT);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp = this->cmd.comparing(var, tmp_name, tp);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp_n = true;
+	}
+	else if (regex_search(val, match, rg_flt)) {
+		tmp = this->cmd.new_var(tmp_name, EKWA_FLOAT);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp = this->cmd.set_value(tmp_name, val, EKWA_FLOAT);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp = this->cmd.comparing(var, tmp_name, tp);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp_n = true;
+	}
+	else if (regex_search(val, match, rg_str)) {
+		tmp = this->cmd.new_var(tmp_name, EKWA_BYTES);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp = this->cmd.set_value(tmp_name, match.str(1),
+			EKWA_BYTES);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp = this->cmd.comparing(var, tmp_name, tp);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		tmp_n = true;
+	}
+	else if (regex_search(val, match, rg_var)) {
+		if (!this->var_exists(val)) {
+			cout << "Error: 32.\n";
+			exit(1);
+		}
+
+		tmp = this->cmd.comparing(var, val, tp);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+	}
 
 	fn1 = "flag_" + to_string(fnum++);
 	fn2 = "flag_" + to_string(fnum++);
 
 	tmp = this->cmd.if_body(fn1, fn2);
 	list.insert(list.end(), tmp.begin(), tmp.end());
+	this->add_cmds(list);
+	list.erase(list.begin(), list.end());
+	// code to bytes ..
+	this->code_to_instructions(code);
+
+	tmp = this->cmd.flag_set(fn2);
+	list.insert(list.end(), tmp.begin(), tmp.end());
+
+	if (tmp_n) {
+		tmp = this->cmd.remove_var(tmp_name);
+		list.insert(list.end(), tmp.begin(), tmp.end());
+	}
 
 	this->add_cmds(list);
-	exit(1);
 }
 
 void _ekwa_function::action_funcm_call(string name,

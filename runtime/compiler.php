@@ -12,7 +12,7 @@ $tokens = array(
 	"EKWA_JMP"	=> "\x05",
 	"EKWA_FSET"	=> "\x06",
 	"EKWA_WRT"	=> "\x07",
-	"EKWA_CMP"	=> "\x08",
+	"EKWA_IFE"	=> "\x08",
 	"EKWA_IFS"	=> "\x0a",
 	"EKWA_IFB"	=> "\x0b",
 	"EKWA_INFO"	=> "\x0c",
@@ -26,8 +26,10 @@ $tokens = array(
 	"EKWA_MUL"	=> "\x14",
 	"EKWA_CAT"	=> "\x15",
 	"EKWA_OPT"	=> "\x16",
+	"EKWA_IFNE"	=> "\x17",
+	"EKWA_EXIT"	=> "\x18",
 
-	"EKWA_END"	=> "\x17"
+	"EKWA_END"	=> "\x20"
 );
 
 $types = array(

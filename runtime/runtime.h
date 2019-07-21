@@ -22,7 +22,7 @@ enum ekwa_tokens {
 	EKWA_JMP	= 0x05, // Jump to flag.
 	EKWA_FSET	= 0x06, // Set flag for jumping.
 	EKWA_WRT	= 0x07, // Write from buffer to var.
-	EKWA_CMP	= 0x08, // If args are equal.
+	EKWA_IFE	= 0x08, // If args are equal.
 	EKWA_IFS	= 0x0a, // If arg is smoller.
 	EKWA_IFB	= 0x0b, // If arg is bigger.
 	EKWA_INFO	= 0x0c, // Info about VM.
@@ -36,11 +36,14 @@ enum ekwa_tokens {
 	EKWA_DIV	= 0x12,
 	EKWA_MOD	= 0x13,
 	EKWA_MUL	= 0x14,
+	/* --------------------- */
 
 	EKWA_CAT	= 0x15, // Concatenation.
 	EKWA_OPT	= 0x16, // Set/reset vm options.
+	EKWA_IFNE	= 0x17, // If args aren't equal.
+	EKWA_EXIT	= 0x18, // Stop script.
 
-	EKWA_END	= 0x17
+	EKWA_END	= 0x20
 };
 
 enum ekwa_types {
@@ -194,5 +197,8 @@ ekwa_set_default_opts(void);
 
 struct ekwa_option *
 ekwa_find_option(char *);
+
+void
+ekwa_token_notequal(struct ekwa_instruction **);
 
 #endif

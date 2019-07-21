@@ -24,4 +24,9 @@ fn main
 	{
 		test = "here you are!"
 	}
+
+	if flvar != 10.3
+	{
+		test = "lol"
+	}
 }

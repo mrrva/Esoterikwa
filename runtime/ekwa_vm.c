@@ -65,7 +65,7 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 			ekwa_arguments_clear();
 			break;
 
-		case EKWA_CMP:
+		case EKWA_IFE:
 			ekwa_token_comparing(&ptr);
 			break;
 
@@ -75,6 +75,10 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 
 		case EKWA_IFB:
 			ekwa_token_ifbigger(&ptr);
+			break;
+
+		case EKWA_IFNE:
+			ekwa_token_notequal(&ptr);
 			break;
 
 		case EKWA_ADD:
@@ -92,6 +96,9 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 		case EKWA_OPT:
 			ekwa_token_set_opt(ptr);
 			break;
+
+		case EKWA_EXIT:
+			exit(0);
 		}
 
 		ptr = ptr->next;

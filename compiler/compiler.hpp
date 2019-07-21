@@ -17,14 +17,14 @@
 
 using namespace std;
 
-const string rgfns = "fn ([a-zA-Z0-9_]+)([\n][{])([a-zA-Z0-9 \n\t=+-_\"{}()]+?[\n][}])";
-const string rgarg = "arg ([string|int|float|auto]+) ([a-zA-Z0-9_]+)";
+const string rgfns = "fn ([a-zA-Z0-9_]+)([\n][{])([a-zA-Z0-9 ><\n\t=+-_\"{}()!,.]+?[\n][}])";
 const string rgvar_init = "^([string|int|float|auto]+) ([a-zA-Z0-9_]+) = (.+)";
-const string rgvar_noinit = "^([a-zA-Z0-9_]+) = (.+)";
-const string rgvar_noinit_plus = "^([a-zA-Z0-9_]+) [+]= (.+)";
-const string rgvar_noinit_minus = "^([a-zA-Z0-9_]+) [-]= (.+)";
 const string rgcall_m = "^([a-zA-Z0-0_]+[.][a-zA-Z0-9]+)[(](.*[)])$";
-const string rg_conds = "^if (.+) ([=][=]|[!][=]|[<]|[>]) (.+)$";
+const string rgarg = "arg ([string|int|float]+) ([a-zA-Z0-9_]+)";
+const string rgvar_noinit_minus = "^([a-zA-Z0-9_]+) [-]= (.+)";
+const string rgvar_noinit_plus = "^([a-zA-Z0-9_]+) [+]= (.+)";
+const string rg_if = "^if (.+) ([=][=]|[!][=]|[<]|[>]) (.+)$";
+const string rgvar_noinit = "^([a-zA-Z0-9_]+) = (.+)";
 
 enum ekwa_tokens {
 	EKWA_VAR	= 0x01, // New var.
@@ -34,7 +34,7 @@ enum ekwa_tokens {
 	EKWA_JMP	= 0x05, // Jump to flag.
 	EKWA_FSET	= 0x06, // Set flag for jumping.
 	EKWA_WRT	= 0x07, // Write from buffer to var.
-	EKWA_CMP	= 0x08, // If args are equal.
+	EKWA_IFE	= 0x08, // If args are equal.
 	EKWA_IFS	= 0x0a, // If arg is smoller.
 	EKWA_IFB	= 0x0b, // If arg is bigger.
 	EKWA_INFO	= 0x0c, // Info about VM.
@@ -48,11 +48,14 @@ enum ekwa_tokens {
 	EKWA_DIV	= 0x12,
 	EKWA_MOD	= 0x13,
 	EKWA_MUL	= 0x14,
+	/* --------------------- */
 
 	EKWA_CAT	= 0x15, // Concatenation.
-	EKWA_OPT	= 0x16, // Chane vm option.
+	EKWA_OPT	= 0x16, // Set/reset vm options.
+	EKWA_IFNE	= 0x17, // If args aren't equal.
+	EKWA_EXIT	= 0x18, // Stop script.
 
-	EKWA_END	= 0x17
+	EKWA_END	= 0x20
 };
 
 enum ekwa_types {
@@ -76,6 +79,7 @@ class _ekwa_instructions
 {
 	public :
 		vector<unsigned char *> to_arg(string);
+		vector<unsigned char *> flag_set(string);
 		vector<unsigned char *> to_buffer(string);
 		vector<unsigned char *> remove_var(string);
 		vector<unsigned char *> plus(string, string);
