@@ -9,7 +9,7 @@
 #include <string.h>
 #include <dlfcn.h>
 
-#define RUNTIME_DEBUG true
+//#define RUNTIME_DEBUG true
 #define MAXBUFFER_LEN 4000
 #define INFO_BLOCK "0.1 - Esoterikwa Virtual Machine" \
 					" - June 2019.\n(c) mrrva.\n\n"
@@ -126,7 +126,7 @@ ekwa_token_write(struct ekwa_instruction *,
 				struct ekwa_var *);
 
 void
-ekwa_token_equal(struct ekwa_instruction **);
+ekwa_token_equal(struct ekwa_instruction **, bool);
 
 void
 ekwa_token_show(struct ekwa_instruction *);
@@ -197,9 +197,6 @@ ekwa_set_default_opts(void);
 
 struct ekwa_option *
 ekwa_find_option(char *);
-
-void
-ekwa_token_notequal(struct ekwa_instruction **);
 
 void
 ekwa_show_all_vars(void);

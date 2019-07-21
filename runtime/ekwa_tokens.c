@@ -375,7 +375,7 @@ ekwa_token_call(struct ekwa_instruction *line,
 }
 
 void
-ekwa_token_equal(struct ekwa_instruction **line)
+ekwa_token_equal(struct ekwa_instruction **line, bool eq)
 {
 	struct ekwa_buffer arg1, arg2;
 	struct ekwa_var *var1, *var2;
@@ -410,12 +410,23 @@ ekwa_token_equal(struct ekwa_instruction **line)
 		ival2 = ekwa_buffer_to_int(var2->value);
 
 		if (ival1 != ival2) {
+			if (!eq) {
+				return;
+			}
+
 			if ((*line)->next->next == NULL
 				|| !(*line)->next->next) {
 				exit(1);
 			}
 			*line = (*line)->next;
 		}
+		if (!eq) {
+			if ((*line)->next->next == NULL
+				|| !(*line)->next->next) {
+				exit(1);
+			}
+		}
+
 		return;
 
 	case EKWA_FLOAT:
@@ -423,12 +434,23 @@ ekwa_token_equal(struct ekwa_instruction **line)
 		fval2 = ekwa_buffer_to_float(var2->value);
 
 		if (fval1 != fval2) {
+			if (!eq) {
+				return;
+			}
+
 			if ((*line)->next->next == NULL
 				|| !(*line)->next->next) {
 				exit(1);
 			}
 			*line = (*line)->next;
 		}
+		if (!eq) {
+			if ((*line)->next->next == NULL
+				|| !(*line)->next->next) {
+				exit(1);
+			}
+		}
+
 		return;
 
 	default:
@@ -439,6 +461,9 @@ ekwa_token_equal(struct ekwa_instruction **line)
 	memcpy(&len2, var2->value, sizeof(uint16_t));
 
 	if (len1 != len2) {
+		if (!eq) {
+			return;
+		}
 		if (!(*line)->next->next
 			|| (*line)->next->next == NULL) {
 			exit(1);
@@ -449,12 +474,22 @@ ekwa_token_equal(struct ekwa_instruction **line)
 
 	if (memcmp(var1->value + 2, var2->value + 2,
 				len1) != 0) {
+		if (!eq) {
+			return;
+		}
 		if (!(*line)->next->next
 			|| (*line)->next->next == NULL) {
 			exit(1);
 		}
 		*line = (*line)->next;
 		return;
+	}
+
+	if (!eq) {
+		if (!(*line)->next->next
+			|| (*line)->next->next == NULL) {
+			exit(1);
+		}
 	}
 }
 
@@ -733,83 +768,4 @@ void
 ekwa_token_set_opt(struct ekwa_instruction *line)
 {
 	
-}
-
-void
-ekwa_token_notequal(struct ekwa_instruction **line)
-{
-	struct ekwa_buffer arg1, arg2;
-	struct ekwa_var *var1, *var2;
-	uint16_t len1, len2;
-	float fval1, fval2;
-	int ival1, ival2;
-
-	if (!(*line) || (*line) == NULL) {
-		printf("\n[E]: ekwa_token_notequal args.\n");
-		exit(1);
-	}
-
-	arg1 = ekwa_decode_buffer((*line)->arg1);
-	arg2 = ekwa_decode_buffer((*line)->arg2);
-
-	var1 = ekwa_find_var(arg1.data);
-	var2 = ekwa_find_var(arg2.data);
-
-	if (!var1 || var2 == NULL || !var1 || var2 == NULL) {
-		printf("\n[E]: Can't select needed vars.\n");
-		exit(1);
-	}
-
-	if (var1->type != var2->type) {
-		printf("\n[E]: Can't compare not same types.\n");
-		exit(1);
-	}
-
-	switch (var1->type) {
-	case EKWA_INT:
-		ival1 = ekwa_buffer_to_int(var1->value);
-		ival2 = ekwa_buffer_to_int(var2->value);
-
-		if (ival1 == ival2) {
-			if ((*line)->next->next == NULL
-				|| !(*line)->next->next) {
-				exit(1);
-			}
-			*line = (*line)->next;
-		}
-		return;
-
-	case EKWA_FLOAT:
-		fval1 = ekwa_buffer_to_float(var1->value);
-		fval2 = ekwa_buffer_to_float(var2->value);
-
-		if (fval1 == fval2) {
-			if ((*line)->next->next == NULL
-				|| !(*line)->next->next) {
-				exit(1);
-			}
-			*line = (*line)->next;
-		}
-		return;
-
-	default:
-		break;
-	}
-
-	memcpy(&len1, var1->value, sizeof(uint16_t));
-	memcpy(&len2, var2->value, sizeof(uint16_t));
-
-	if (len1 != len2) {
-		return;
-	}
-
-	if (memcmp(var1->value + 2, var2->value + 2,
-				len1) == 0) {
-		if (!(*line)->next->next
-			|| (*line)->next->next == NULL) {
-			exit(1);
-		}
-		*line = (*line)->next;
-		return;
-	}
 }

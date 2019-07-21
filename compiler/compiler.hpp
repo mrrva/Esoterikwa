@@ -83,17 +83,8 @@ class _ekwa_instructions
 {
 	public :
 		vector<unsigned char *> exit_s(void);
-		vector<unsigned char *> show(string);
-		vector<unsigned char *> jump(string);
-		vector<unsigned char *> to_arg(string);
-		vector<unsigned char *> flag_set(string);
-		vector<unsigned char *> to_buffer(string);
-		vector<unsigned char *> remove_var(string);
-		vector<unsigned char *> plus(string, string);
-		vector<unsigned char *> call_function(string);
-		vector<unsigned char *> minus(string, string);
-		vector<unsigned char *> from_buffer_to(string);
-		vector<unsigned char *> concat(string, string);
+		vector<unsigned char *> two_args(string, string, unsigned char);
+		vector<unsigned char *> one_arg(string, unsigned char);
 		vector<unsigned char *> if_body(string, string);
 		vector<unsigned char *> loop_end(string, string);
 		vector<unsigned char *> new_var(string, enum ekwa_types);

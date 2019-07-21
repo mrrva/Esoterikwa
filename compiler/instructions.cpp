@@ -1,6 +1,56 @@
 
 #include "compiler.hpp"
 
+vector<unsigned char *> _ekwa_instructions::one_arg(string arg,
+	unsigned char token)
+{
+	const char *cname = arg.c_str();
+	vector<unsigned char *> list;
+	uint16_t len = arg.length();
+	unsigned char *cmd;
+
+	if (len == 0 || len > MAXBUFFER_LEN) {
+		cout << "Error: 10.\n";
+		exit(1);
+	}
+
+	cmd = new unsigned char[len + 100];
+	memset(cmd, 0x00, len + 100);
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &len, 2);
+	memcpy(cmd + 3, cname, len);
+
+	list.push_back(cmd);
+	return list;
+}
+
+vector<unsigned char *> _ekwa_instructions::two_args(string v1,
+	string v2, unsigned char token)
+{
+	uint16_t v1len = v1.length(), v2len = v2.length();
+	const char *v1_c = v1.c_str(), *v2_c = v2.c_str();
+	vector<unsigned char *> list;
+	unsigned char *cmd;
+
+	if (v1len == 0 || v1len > MAXBUFFER_LEN || v2len == 0
+		|| v2len > MAXBUFFER_LEN) {
+		cout << "Error: 7.\n";
+		exit(1);
+	}
+
+	cmd = new unsigned char[v2len + v1len + 100];
+
+	memcpy(cmd, &token, 1);
+	memcpy(cmd + 1, &v1len, 2);
+	memcpy(cmd + 3, v1_c, v1len);
+	memcpy(cmd + 3 + v1len, &v2len, 2);
+	memcpy(cmd + 5 + v1len, v2_c, v2len);
+
+	list.push_back(cmd);
+	return list;
+}
+
 vector<unsigned char *> _ekwa_instructions::new_var(string name,
 	enum ekwa_types type)
 {
@@ -87,202 +137,6 @@ vector<unsigned char *> _ekwa_instructions::set_value(string name,
 	return list;
 }
 
-vector<unsigned char *> _ekwa_instructions::concat(string v1,
-	string v2)
-{
-	uint16_t v1len = v1.length(), v2len = v2.length();
-	vector<unsigned char *> list;
-	unsigned char *cmd, token = EKWA_CAT;
-	const char *v1_c = v1.c_str(), *v2_c = v2.c_str();
-
-	if (v1len == 0 || v1len > MAXBUFFER_LEN || v2len == 0
-		|| v2len > MAXBUFFER_LEN) {
-		cout << "Error: 7.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[v2len + v1len + 100];
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &v1len, 2);
-	memcpy(cmd + 3, v1_c, v1len);
-	memcpy(cmd + 3 + v1len, &v2len, 2);
-	memcpy(cmd + 5 + v1len, v2_c, v2len);
-
-	list.push_back(cmd);
-	return list;
-}
-
-vector<unsigned char *> _ekwa_instructions::to_buffer(string name)
-{
-	unsigned char *cmd, token = EKWA_BUFF;
-	const char *cname = name.c_str();
-	vector<unsigned char *> list;
-	uint16_t len = name.length();
-
-	if (len == 0 || len > MAXBUFFER_LEN) {
-		cout << "Error: 10.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[len + 100];
-	memset(cmd, 0x00, len + 100);
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &len, 2);
-	memcpy(cmd + 3, cname, len);
-
-	list.push_back(cmd);
-	return list;
-}
-
-vector<unsigned char *> _ekwa_instructions::from_buffer_to(string name)
-{
-	unsigned char *cmd, token = EKWA_WRT;
-	const char *cname = name.c_str();
-	vector<unsigned char *> list;
-	uint16_t len = name.length();
-
-	if (len == 0 || len > MAXBUFFER_LEN) {
-		cout << "Error: 11.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[len + 100];
-	memset(cmd, 0x00, len + 100);
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &len, 2);
-	memcpy(cmd + 3, cname, len);
-
-	list.push_back(cmd);
-	return list;
-}
-
-
-vector<unsigned char *> _ekwa_instructions::remove_var(string name)
-{
-	unsigned char *cmd, token = EKWA_RMV;
-	const char *cname = name.c_str();
-	vector<unsigned char *> list;
-	uint16_t len = name.length();
-
-	if (len == 0 || len > MAXBUFFER_LEN) {
-		cout << "Error: 12.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[len + 100];
-	memset(cmd, 0x00, len + 100);
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &len, 2);
-	memcpy(cmd + 3, cname, len);
-
-	list.push_back(cmd);
-	return list;
-}
-
-
-vector<unsigned char *> _ekwa_instructions::to_arg(string arg)
-{
-	unsigned char *cmd, token = EKWA_ARG;
-	const char *name = arg.c_str();
-	vector<unsigned char *> list;
-	uint16_t len = arg.length();
-
-	if (len > MAXBUFFER_LEN || len == 0) {
-		cout << "Error: 17.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[len + 100];
-	memset(cmd, 0x00, len + 100);
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &len, 2);
-	memcpy(cmd + 3, name, len);
-
-	list.push_back(cmd);
-	return list;
-}
-
-vector<unsigned char *> _ekwa_instructions::call_function(string name)
-{
-	unsigned char *cmd, token = EKWA_CALL;
-	const char *cname = name.c_str();
-	vector<unsigned char *> list;
-	uint16_t len = name.length();
-
-	if (len > MAXBUFFER_LEN || len == 0) {
-		cout << "Error: 18.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[len + 100];
-	memset(cmd, 0x00, len + 100);
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &len, 2);
-	memcpy(cmd + 3, cname, len);
-
-	list.push_back(cmd);
-	return list;
-}
-
-
-vector<unsigned char *> _ekwa_instructions::plus(string v1,
-	string v2)
-{
-	uint16_t v1len = v1.length(), v2len = v2.length();
-	vector<unsigned char *> list;
-	unsigned char *cmd, token = EKWA_ADD;
-	const char *v1_c = v1.c_str(), *v2_c = v2.c_str();
-
-	if (v1len == 0 || v1len > MAXBUFFER_LEN || v2len == 0
-		|| v2len > MAXBUFFER_LEN) {
-		cout << "Error: 23.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[v2len + v1len + 100];
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &v1len, 2);
-	memcpy(cmd + 3, v1_c, v1len);
-	memcpy(cmd + 3 + v1len, &v2len, 2);
-	memcpy(cmd + 5 + v1len, v2_c, v2len);
-
-	list.push_back(cmd);
-	return list;
-}
-
-vector<unsigned char *> _ekwa_instructions::minus(string v1,
-	string v2)
-{
-	uint16_t v1len = v1.length(), v2len = v2.length();
-	vector<unsigned char *> list;
-	unsigned char *cmd, token = EKWA_SUB;
-	const char *v1_c = v1.c_str(), *v2_c = v2.c_str();
-
-	if (v1len == 0 || v1len > MAXBUFFER_LEN || v2len == 0
-		|| v2len > MAXBUFFER_LEN) {
-		cout << "Error: 28.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[v2len + v1len + 100];
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &v1len, 2);
-	memcpy(cmd + 3, v1_c, v1len);
-	memcpy(cmd + 3 + v1len, &v2len, 2);
-	memcpy(cmd + 5 + v1len, v2_c, v2len);
-
-	list.push_back(cmd);
-	return list;
-}
-
 vector<unsigned char *> _ekwa_instructions::if_body(string f1,
 	string f2)
 {
@@ -352,29 +206,6 @@ vector<unsigned char *> _ekwa_instructions::comparing(string v1,
 	return list;
 }
 
-vector<unsigned char *> _ekwa_instructions::flag_set(string name)
-{
-	unsigned char *cmd, token = EKWA_FSET;
-	const char *cname = name.c_str();
-	vector<unsigned char *> list;
-	uint16_t len = name.length();
-
-	if (len > MAXBUFFER_LEN || len == 0) {
-		cout << "Error: 34.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[len + 100];
-	memset(cmd, 0x00, len + 100);
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &len, 2);
-	memcpy(cmd + 3, cname, len);
-
-	list.push_back(cmd);
-	return list;
-}
-
 vector<unsigned char *> _ekwa_instructions::loop_end(string f1,
 	string f2)
 {
@@ -409,28 +240,6 @@ vector<unsigned char *> _ekwa_instructions::loop_end(string f1,
 	return list;
 }
 
-vector<unsigned char *> _ekwa_instructions::jump(string flag)
-{
-	unsigned char *cmd, token = EKWA_JMP;
-	const char *cname = flag.c_str();
-	vector<unsigned char *> list;
-	uint16_t len = flag.length();
-
-	if (len > MAXBUFFER_LEN || len == 0) {
-		cout << "Error: 34.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[len + 100];
-	memset(cmd, 0x00, len + 100);
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &len, 2);
-	memcpy(cmd + 3, cname, len);
-
-	list.push_back(cmd);
-	return list;
-}
 
 vector<unsigned char *> _ekwa_instructions::exit_s(void)
 {
@@ -443,28 +252,5 @@ vector<unsigned char *> _ekwa_instructions::exit_s(void)
 	memcpy(cmd, &token, 1);
 	list.push_back(cmd);
 
-	return list;
-}
-
-vector<unsigned char *> _ekwa_instructions::show(string name)
-{
-	unsigned char *cmd, token = EKWA_SHOW;
-	const char *cname = name.c_str();
-	vector<unsigned char *> list;
-	uint16_t len = name.length();
-
-	if (len > MAXBUFFER_LEN || len == 0) {
-		cout << "Error: 36.\n";
-		exit(1);
-	}
-
-	cmd = new unsigned char[len + 100];
-	memset(cmd, 0x00, len + 100);
-
-	memcpy(cmd, &token, 1);
-	memcpy(cmd + 1, &len, 2);
-	memcpy(cmd + 3, cname, len);
-
-	list.push_back(cmd);
 	return list;
 }

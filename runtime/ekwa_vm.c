@@ -28,6 +28,7 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 		ekwa_show_all_vars();
 		line++;
 	#endif
+
 		switch (ptr->token) {
 		case EKWA_INFO:
 			printf(INFO_BLOCK);
@@ -72,7 +73,7 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 			break;
 
 		case EKWA_IFE:
-			ekwa_token_equal(&ptr);
+			ekwa_token_equal(&ptr, true);
 			break;
 
 		case EKWA_IFS:
@@ -84,7 +85,7 @@ ekwa_virtual_machine(struct ekwa_instruction *list)
 			break;
 
 		case EKWA_IFNE:
-			ekwa_token_notequal(&ptr);
+			ekwa_token_equal(&ptr, false);
 			break;
 
 		case EKWA_ADD:

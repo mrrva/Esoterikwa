@@ -124,7 +124,7 @@ void _ekwa_function::action_show(string var)
 		exit(1);
 	}
 
-	list = this->cmd.show(var);
+	list = this->cmd.one_arg(var, EKWA_SHOW);
 	this->add_cmds(list);
 }
 
@@ -145,7 +145,7 @@ void _ekwa_function::set_jump(void)
 		exit(1);
 	}
 
-	tmp = this->cmd.jump(jmp_br);
+	tmp = this->cmd.one_arg(jmp_br, EKWA_JMP);
 	list.insert(list.end(), tmp.begin(), tmp.end());
 
 	jmp_br = string();
@@ -175,7 +175,7 @@ void _ekwa_function::get_loop(stringstream &ss, size_t &fnum)
 	fn1 = "_" + this->name + "_flag_" + to_string(fnum++);
 	fn2 = "_" + this->name + "_flag_" + to_string(fnum++);
 
-	tmp = this->cmd.flag_set(fn1);
+	tmp = this->cmd.one_arg(fn1, EKWA_FSET);
 	list.insert(list.end(), tmp.begin(), tmp.end());
 
 	jmp_br = fn2;
@@ -296,11 +296,11 @@ void _ekwa_function::get_if(string var, string cond, string val,
 	// code to bytes ..
 	this->code_to_instructions(code);
 
-	tmp = this->cmd.flag_set(fn2);
+	tmp = this->cmd.one_arg(fn2, EKWA_FSET);
 	list.insert(list.end(), tmp.begin(), tmp.end());
 
 	if (tmp_n) {
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -314,11 +314,11 @@ void _ekwa_function::action_funcm_call(string name,
 	vector<unsigned char *> list, tmp;
 
 	for (auto &p : args) {
-		tmp = this->cmd.to_arg(p);
+		tmp = this->cmd.one_arg(p, EKWA_ARG);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
-	tmp = this->cmd.call_function(name);
+	tmp = this->cmd.one_arg(name, EKWA_CALL);
 	list.insert(list.end(), tmp.begin(), tmp.end());
 
 	this->add_cmds(list);
@@ -372,13 +372,13 @@ vector<unsigned char *> _ekwa_function::action_var_int_mn(string name,
 			EKWA_INT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Call `sub` token
-		tmp = this->cmd.minus(name, tmp_name);
+		tmp = this->cmd.two_args(name, tmp_name, EKWA_SUB);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to the var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Remove tmp var
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 	else if (regex_search(action, match, var)) {
@@ -389,10 +389,10 @@ vector<unsigned char *> _ekwa_function::action_var_int_mn(string name,
 			exit(1);
 		}
 		// Call `sub` token
-		tmp = this->cmd.minus(name, match.str(1));
+		tmp = this->cmd.two_args(name, match.str(1), EKWA_SUB);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to the var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -419,13 +419,13 @@ vector<unsigned char *> _ekwa_function::action_var_float_mn(string name,
 			EKWA_FLOAT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Call `sub` token
-		tmp = this->cmd.minus(name, tmp_name);
+		tmp = this->cmd.two_args(name, tmp_name, EKWA_SUB);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to the var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Remove tmp var
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 	else if (regex_search(action, match, var)) {
@@ -436,10 +436,10 @@ vector<unsigned char *> _ekwa_function::action_var_float_mn(string name,
 			exit(1);
 		}
 		// Call `sub` token
-		tmp = this->cmd.minus(name, match.str(1));
+		tmp = this->cmd.two_args(name, match.str(1), EKWA_SUB);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to the var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -498,13 +498,13 @@ vector<unsigned char *> _ekwa_function::action_var_float_pl(string name,
 			EKWA_FLOAT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Call `add` token
-		tmp = this->cmd.plus(name, tmp_name);
+		tmp = this->cmd.two_args(name, tmp_name, EKWA_ADD);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to the var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Remove tmp var
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 	else if (regex_search(action, match, var)) {
@@ -515,10 +515,10 @@ vector<unsigned char *> _ekwa_function::action_var_float_pl(string name,
 			exit(1);
 		}
 		// Call `add` token
-		tmp = this->cmd.plus(name, match.str(1));
+		tmp = this->cmd.two_args(name, match.str(1), EKWA_ADD);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to the var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -545,13 +545,13 @@ vector<unsigned char *> _ekwa_function::action_var_int_pl(string name,
 			EKWA_INT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Call `add` token
-		tmp = this->cmd.plus(name, tmp_name);
+		tmp = this->cmd.two_args(name, tmp_name, EKWA_ADD);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to the var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Remove tmp var
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 	else if (regex_search(action, match, var)) {
@@ -562,10 +562,10 @@ vector<unsigned char *> _ekwa_function::action_var_int_pl(string name,
 			exit(1);
 		}
 		// Call `add` token
-		tmp = this->cmd.plus(name, match.str(1));
+		tmp = this->cmd.two_args(name, match.str(1), EKWA_ADD);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to the var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -592,10 +592,10 @@ vector<unsigned char *> _ekwa_function::action_var_string_pl(string name,
 			EKWA_BYTES);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Call concat token
-		tmp = this->cmd.concat(name, tmp_name);
+		tmp = this->cmd.two_args(name, tmp_name, EKWA_CAT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Remove tmp var
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 	else if (regex_search(action, match, var)) {
@@ -606,7 +606,7 @@ vector<unsigned char *> _ekwa_function::action_var_string_pl(string name,
 			exit(1);
 		}
 		// Write var to the buffer
-		tmp = this->cmd.concat(name, match.str(1));
+		tmp = this->cmd.two_args(name, match.str(1), EKWA_CAT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -707,10 +707,10 @@ vector<unsigned char *> _ekwa_function::action_var_auto(string name,
 		// Find var
 		tvar = this->find_var(match.str(1));
 		// Write var to the buffer
-		tmp = this->cmd.to_buffer(match.str(1));
+		tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Change type in the list
 		this->change_type(name, tvar.type);
@@ -721,14 +721,14 @@ vector<unsigned char *> _ekwa_function::action_var_auto(string name,
 		// Checking vars
 		for (auto &p : args) {
 			// Add current var as argument
-			tmp = this->cmd.to_arg(p);
+			tmp = this->cmd.one_arg(p, EKWA_ARG);
 			list.insert(list.end(), tmp.begin(), tmp.end());
 		}
 		// Call function
-		tmp = this->cmd.call_function(match.str(1));
+		tmp = this->cmd.one_arg(match.str(1), EKWA_CALL);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -781,13 +781,13 @@ vector<unsigned char *> _ekwa_function::action_var_float(string name,
 			EKWA_FLOAT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write var to the buffer
-		tmp = this->cmd.to_buffer(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Remove tmp var
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 	else if (regex_search(action, match, var)) {
@@ -798,10 +798,10 @@ vector<unsigned char *> _ekwa_function::action_var_float(string name,
 			exit(1);
 		}
 		// Write var to the buffer
-		tmp = this->cmd.to_buffer(match.str(1));
+		tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -828,13 +828,13 @@ vector<unsigned char *> _ekwa_function::action_var_int(string name,
 			EKWA_INT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write var to the buffer
-		tmp = this->cmd.to_buffer(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Remove tmp var
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 	else if (regex_search(action, match, var)) {
@@ -845,10 +845,10 @@ vector<unsigned char *> _ekwa_function::action_var_int(string name,
 			exit(1);
 		}
 		// Write var to the buffer
-		tmp = this->cmd.to_buffer(match.str(1));
+		tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
@@ -875,13 +875,13 @@ vector<unsigned char *> _ekwa_function::action_var_string(string name,
 			EKWA_BYTES);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write var to the buffer
-		tmp = this->cmd.to_buffer(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Remove tmp var
-		tmp = this->cmd.remove_var(tmp_name);
+		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 	else if (regex_search(action, match, var)) {
@@ -892,10 +892,10 @@ vector<unsigned char *> _ekwa_function::action_var_string(string name,
 			exit(1);
 		}
 		// Write var to the buffer
-		tmp = this->cmd.to_buffer(match.str(1));
+		tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 		// Write buffer's data to var
-		tmp = this->cmd.from_buffer_to(name);
+		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
 	}
 
