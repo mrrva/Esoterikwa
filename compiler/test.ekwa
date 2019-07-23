@@ -43,5 +43,13 @@ fn main
 	}
 
 	show(fndata)
-	exit
+
+	integer /= 2
+	show(integer)
+
+	integer %= 3
+	show(integer)
+
+	integer *= 3
+	show(integer)
 }

@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[])
 {
-	//vector<_ekwa_function> f_list;
+	//vector<_ekwa_function *> f_list;
 	struct txtfunction one;
 	regex r_funcs(rgfns);
 	regex rpls("[\n][\t]");

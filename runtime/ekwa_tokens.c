@@ -674,7 +674,7 @@ ekwa_token_math(struct ekwa_instruction *line,
 		if (type == 0x11) {
 			ires = ival1 - ival2;
 		}
-		if (type == 0x04) {
+		if (type == 0x14) {
 			ires = ival1 * ival2;
 		}
 		if (type == 0x12) {
@@ -701,7 +701,7 @@ ekwa_token_math(struct ekwa_instruction *line,
 		if (type == 0x11) {
 			fres = fval1 - fval2;
 		}
-		if (type == 0x04) {
+		if (type == 0x14) {
 			fres = fval1 * fval2;
 		}
 		if (type == 0x12 || type == 0x13) {
@@ -740,7 +740,7 @@ ekwa_token_concat(struct ekwa_instruction *line)
 	if (!var1 || !var2 || var1 == NULL 
 		|| var2 == NULL) {
 		printf("\n[E]: Can't find vars in ekwa"
-				"_token_concat.\n");
+				"_token_concats.\n");
 		return;
 	}
 

@@ -55,6 +55,9 @@ void _ekwa_function::code_to_instructions(string code)
 	regex rg_7(rg_loop);
 	regex rg_9(rg_exit);
 	regex rg_6(rg_if);
+	regex rg_11(rgvar_noinit_div);
+	regex rg_12(rgvar_noinit_mod);
+	regex rg_13(rgvar_noinit_mul);
 
 	while (getline(ss, line, '\n')) {
 		if (regex_search(line, match, rg_1)) {
@@ -110,6 +113,24 @@ void _ekwa_function::code_to_instructions(string code)
 
 		if (regex_search(line, match, rg_10)) {
 			this->action_show(match.str(1));
+			continue;
+		}
+
+		if (regex_search(line, match, rg_11)) {
+			this->action_var_noinit_div(match.str(1),
+					match.str(2));
+			continue;
+		}
+
+		if (regex_search(line, match, rg_12)) {
+			this->action_var_noinit_mod(match.str(1),
+					match.str(2));
+			continue;
+		}
+
+		if (regex_search(line, match, rg_13)) {
+			this->action_var_noinit_mul(match.str(1),
+					match.str(2));
 			continue;
 		}
 	}
@@ -337,11 +358,11 @@ void _ekwa_function::action_var_noinit_mn(string name,
 
 	switch (tvar.type) {
 	case EKWA_INT:
-		buff = this->action_var_int_mn(name, action);
+		buff = this->action_var_int(name, action, EKWA_SUB);
 		break;
 
 	case EKWA_FLOAT:
-		buff = this->action_var_float_mn(name, action);
+		buff = this->action_var_float(name, action, EKWA_SUB);
 		break;
 
 	default:
@@ -352,99 +373,106 @@ void _ekwa_function::action_var_noinit_mn(string name,
 	this->add_cmds(buff);
 }
 
-vector<unsigned char *> _ekwa_function::action_var_int_mn(string name,
+void _ekwa_function::action_var_noinit_div(string name,
 	string action)
 {
-	vector<unsigned char *> list, tmp;
-	regex var("^([a-zA-Z0-9_]+)$");
-	regex val("^([0-9]+)$");
-	struct ekwa_var tvar;
-	smatch match;
+	struct ekwa_var tvar = this->find_var(name);
+	vector<unsigned char *> buff;
 
-	string tmp_name = "_action_var_int_mn";
-
-	if (regex_search(action, match, val)) {
-		// Create new var
-		tmp = this->cmd.new_var(tmp_name, EKWA_INT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Add value to var
-		tmp = this->cmd.set_value(tmp_name, match.str(1),
-			EKWA_INT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Call `sub` token
-		tmp = this->cmd.two_args(name, tmp_name, EKWA_SUB);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to the var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Remove tmp var
-		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-	}
-	else if (regex_search(action, match, var)) {
-		tvar = this->find_var(match.str(1));
-
-		if (tvar.type != EKWA_INT) {
-			cout << "Error: 29.\n";
-			exit(1);
-		}
-		// Call `sub` token
-		tmp = this->cmd.two_args(name, match.str(1), EKWA_SUB);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to the var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
+	if (!this->var_exists(name)) {
+		cout << "Error: 40.\n";
+		exit(1);
 	}
 
-	return list;
+	switch (tvar.type) {
+	case EKWA_INT:
+		buff = this->action_var_int(name, action, EKWA_DIV);
+		break;
+
+	case EKWA_FLOAT:
+		buff = this->action_var_float(name, action, EKWA_DIV);
+		break;
+
+	default:
+		cout << "Error: 41.\n";
+		exit(1);
+	}
+
+	this->add_cmds(buff);
 }
 
-vector<unsigned char *> _ekwa_function::action_var_float_mn(string name,
+
+
+
+void _ekwa_function::action_var_noinit_mul(string name,
 	string action)
 {
-	vector<unsigned char *> list, tmp;
-	regex val("^([0-9]+[.][0-9]+)$");
-	regex var("^([a-zA-Z0-9_]+)$");
-	struct ekwa_var tvar;
-	smatch match;
+	struct ekwa_var tvar = this->find_var(name);
+	vector<unsigned char *> buff;
 
-	string tmp_name = "_action_var_float_mn";
-
-	if (regex_search(action, match, val)) {
-		// Create new var
-		tmp = this->cmd.new_var(tmp_name, EKWA_FLOAT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Add value to var
-		tmp = this->cmd.set_value(tmp_name, match.str(1),
-			EKWA_FLOAT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Call `sub` token
-		tmp = this->cmd.two_args(name, tmp_name, EKWA_SUB);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to the var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Remove tmp var
-		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-	}
-	else if (regex_search(action, match, var)) {
-		tvar = this->find_var(match.str(1));
-
-		if (tvar.type != EKWA_FLOAT) {
-			cout << "Error: 27.\n";
-			exit(1);
-		}
-		// Call `sub` token
-		tmp = this->cmd.two_args(name, match.str(1), EKWA_SUB);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to the var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
+	if (!this->var_exists(name)) {
+		cout << "Error: 40.\n";
+		exit(1);
 	}
 
-	return list;
+	switch (tvar.type) {
+	case EKWA_INT:
+		buff = this->action_var_int(name, action, EKWA_MUL);
+		break;
+
+	case EKWA_FLOAT:
+		buff = this->action_var_float(name, action, EKWA_MUL);
+		break;
+
+	default:
+		cout << "Error: 41.\n";
+		exit(1);
+	}
+
+	this->add_cmds(buff);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void _ekwa_function::action_var_noinit_mod(string name,
+	string action)
+{
+	struct ekwa_var tvar = this->find_var(name);
+	vector<unsigned char *> buff;
+
+	if (!this->var_exists(name)) {
+		cout << "Error: 44.\n";
+		exit(1);
+	}
+
+	switch (tvar.type) {
+	case EKWA_INT:
+		buff = this->action_var_int(name, action, EKWA_MOD);
+		break;
+
+	default:
+		cout << "Error: 45.\n";
+		exit(1);
+	}
+
+	this->add_cmds(buff);
+}
+
+
 
 void _ekwa_function::action_var_noinit_pl(string name,
 	string action)
@@ -459,15 +487,15 @@ void _ekwa_function::action_var_noinit_pl(string name,
 
 	switch (tvar.type) {
 	case EKWA_BYTES:
-		buff = this->action_var_string_pl(name, action);
+		buff = this->action_var_string(name, action, true);
 		break;
 
 	case EKWA_INT:
-		buff = this->action_var_int_pl(name, action);
+		buff = this->action_var_int(name, action, EKWA_ADD);
 		break;
 
 	case EKWA_FLOAT:
-		buff = this->action_var_float_pl(name, action);
+		buff = this->action_var_float(name, action, EKWA_ADD);
 		break;
 
 	default:
@@ -478,140 +506,6 @@ void _ekwa_function::action_var_noinit_pl(string name,
 	this->add_cmds(buff);
 }
 
-vector<unsigned char *> _ekwa_function::action_var_float_pl(string name,
-	string action)
-{
-	vector<unsigned char *> list, tmp;
-	regex val("^([0-9]+[.][0-9]+)$");
-	regex var("^([a-zA-Z0-9_]+)$");
-	struct ekwa_var tvar;
-	smatch match;
-
-	string tmp_name = "_action_var_float_pl";
-
-	if (regex_search(action, match, val)) {
-		// Create new var
-		tmp = this->cmd.new_var(tmp_name, EKWA_FLOAT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Add value to var
-		tmp = this->cmd.set_value(tmp_name, match.str(1),
-			EKWA_FLOAT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Call `add` token
-		tmp = this->cmd.two_args(name, tmp_name, EKWA_ADD);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to the var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Remove tmp var
-		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-	}
-	else if (regex_search(action, match, var)) {
-		tvar = this->find_var(match.str(1));
-
-		if (tvar.type != EKWA_FLOAT) {
-			cout << "Error: 23.\n";
-			exit(1);
-		}
-		// Call `add` token
-		tmp = this->cmd.two_args(name, match.str(1), EKWA_ADD);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to the var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-	}
-
-	return list;
-}
-
-vector<unsigned char *> _ekwa_function::action_var_int_pl(string name,
-	string action)
-{
-	vector<unsigned char *> list, tmp;
-	regex var("^([a-zA-Z0-9_]+)$");
-	regex val("^([0-9]+)$");
-	struct ekwa_var tvar;
-	smatch match;
-
-	string tmp_name = "_action_var_int_pl";
-
-	if (regex_search(action, match, val)) {
-		// Create new var
-		tmp = this->cmd.new_var(tmp_name, EKWA_INT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Add value to var
-		tmp = this->cmd.set_value(tmp_name, match.str(1),
-			EKWA_INT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Call `add` token
-		tmp = this->cmd.two_args(name, tmp_name, EKWA_ADD);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to the var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Remove tmp var
-		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-	}
-	else if (regex_search(action, match, var)) {
-		tvar = this->find_var(match.str(1));
-
-		if (tvar.type != EKWA_INT) {
-			cout << "Error: 22.\n";
-			exit(1);
-		}
-		// Call `add` token
-		tmp = this->cmd.two_args(name, match.str(1), EKWA_ADD);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to the var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-	}
-
-	return list;
-}
-
-vector<unsigned char *> _ekwa_function::action_var_string_pl(string name,
-	string action)
-{
-	vector<unsigned char *> list, tmp;
-	regex var("^([a-zA-Z0-9_]+)$");
-	regex val("\"(.+?)\"$");
-	struct ekwa_var tvar;
-	smatch match;
-
-	string tmp_name = "_action_var_string_pl";
-
-	if (regex_search(action, match, val)) {
-		// Create new var
-		tmp = this->cmd.new_var(tmp_name, EKWA_BYTES);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Add value to var
-		tmp = this->cmd.set_value(tmp_name, match.str(1),
-			EKWA_BYTES);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Call concat token
-		tmp = this->cmd.two_args(name, tmp_name, EKWA_CAT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Remove tmp var
-		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-	}
-	else if (regex_search(action, match, var)) {
-		tvar = this->find_var(match.str(1));
-
-		if (tvar.type != EKWA_BYTES) {
-			cout << "Error: 21.\n";
-			exit(1);
-		}
-		// Write var to the buffer
-		tmp = this->cmd.two_args(name, match.str(1), EKWA_CAT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-	}
-
-	return list;
-}
 
 void _ekwa_function::action_var_noinit(string name, string action)
 {
@@ -625,15 +519,15 @@ void _ekwa_function::action_var_noinit(string name, string action)
 
 	switch (tvar.type) {
 	case EKWA_BYTES:
-		buff = this->action_var_string(name, action);
+		buff = this->action_var_string(name, action, false);
 		break;
 
 	case EKWA_INT:
-		buff = this->action_var_int(name, action);
+		buff = this->action_var_int(name, action, 0xff);
 		break;
 
 	case EKWA_FLOAT:
-		buff = this->action_var_float(name, action);
+		buff = this->action_var_float(name, action, 0xff);
 		break;
 
 	case EKWA_CUSTOM:
@@ -660,15 +554,15 @@ void _ekwa_function::action_var_init(string type, string name,
 
 	switch (v_type) {
 	case EKWA_BYTES:
-		buff = this->action_var_string(name, action);
+		buff = this->action_var_string(name, action, false);
 		break;
 
 	case EKWA_INT:
-		buff = this->action_var_int(name, action);
+		buff = this->action_var_int(name, action, 0xff);
 		break;
 
 	case EKWA_FLOAT:
-		buff = this->action_var_float(name, action);
+		buff = this->action_var_float(name, action, 0xff);
 		break;
 
 	case EKWA_CUSTOM:
@@ -761,8 +655,52 @@ vector<string> _ekwa_function::get_fnargs(string line)
 	return list;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 vector<unsigned char *> _ekwa_function::action_var_float(string name,
-	string action)
+	string action, unsigned char token)
 {
 	vector<unsigned char *> list, tmp;
 	regex val("^([0-9]+[.][0-9]+)$");
@@ -770,7 +708,7 @@ vector<unsigned char *> _ekwa_function::action_var_float(string name,
 	struct ekwa_var tvar;
 	smatch match;
 
-	string tmp_name = "_action_var_float";
+	string tmp_name = "_action_var_float_";
 
 	if (regex_search(action, match, val)) {
 		// Create new var
@@ -780,9 +718,18 @@ vector<unsigned char *> _ekwa_function::action_var_float(string name,
 		tmp = this->cmd.set_value(tmp_name, match.str(1),
 			EKWA_FLOAT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write var to the buffer
-		tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
-		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		if (token == 0xff) {
+			// Write var to the buffer
+			tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+		else {
+			// Call token
+			tmp = this->cmd.two_args(name, tmp_name, token);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+
 		// Write buffer's data to var
 		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
@@ -797,9 +744,18 @@ vector<unsigned char *> _ekwa_function::action_var_float(string name,
 			cout << "Error: 14.\n";
 			exit(1);
 		}
-		// Write var to the buffer
-		tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
-		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		if (token == 0xff) {
+			// Write var to the buffer
+			tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+		else {
+			// Call token
+			tmp = this->cmd.two_args(name, match.str(1), token);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+
 		// Write buffer's data to var
 		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
@@ -808,8 +764,43 @@ vector<unsigned char *> _ekwa_function::action_var_float(string name,
 	return list;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 vector<unsigned char *> _ekwa_function::action_var_int(string name,
-	string action)
+	string action, unsigned char token)
 {
 	vector<unsigned char *> list, tmp;
 	regex var("^([a-zA-Z0-9_]+)$");
@@ -817,7 +808,7 @@ vector<unsigned char *> _ekwa_function::action_var_int(string name,
 	struct ekwa_var tvar;
 	smatch match;
 
-	string tmp_name = "_action_var_int";
+	string tmp_name = "_action_var_int_";
 
 	if (regex_search(action, match, val)) {
 		// Create new var
@@ -827,9 +818,18 @@ vector<unsigned char *> _ekwa_function::action_var_int(string name,
 		tmp = this->cmd.set_value(tmp_name, match.str(1),
 			EKWA_INT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write var to the buffer
-		tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
-		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		if (token == 0xff) {
+			// Write var to the buffer
+			tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+		else {
+			// Call token
+			tmp = this->cmd.two_args(name, tmp_name, token);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+
 		// Write buffer's data to var
 		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
@@ -844,9 +844,18 @@ vector<unsigned char *> _ekwa_function::action_var_int(string name,
 			cout << "Error: 13.\n";
 			exit(1);
 		}
-		// Write var to the buffer
-		tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
-		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		if (token == 0xff) {
+			// Write var to the buffer
+			tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+		else {
+			// Call token
+			tmp = this->cmd.two_args(name, match.str(1), token);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+
 		// Write buffer's data to var
 		tmp = this->cmd.one_arg(name, EKWA_WRT);
 		list.insert(list.end(), tmp.begin(), tmp.end());
@@ -855,8 +864,18 @@ vector<unsigned char *> _ekwa_function::action_var_int(string name,
 	return list;
 }
 
+
+
+
+
+
+
+
+
+
+
 vector<unsigned char *> _ekwa_function::action_var_string(string name,
-	string action)
+	string action, bool cat)
 {
 	vector<unsigned char *> list, tmp;
 	regex var("^([a-zA-Z0-9_]+)$");
@@ -864,22 +883,32 @@ vector<unsigned char *> _ekwa_function::action_var_string(string name,
 	struct ekwa_var tvar;
 	smatch match;
 
-	string tmp_name = "_action_var_string";
+	string tmp_name = "_action_var_string_";
 
 	if (regex_search(action, match, val)) {
 		// Create new var
 		tmp = this->cmd.new_var(tmp_name, EKWA_BYTES);
 		list.insert(list.end(), tmp.begin(), tmp.end());
+
 		// Add value to var
 		tmp = this->cmd.set_value(tmp_name, match.str(1),
 			EKWA_BYTES);
 		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write var to the buffer
-		tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
+		///////////////////////////////////////////////////
+		if (cat == false) {
+			// Write var to the buffer
+			tmp = this->cmd.one_arg(tmp_name, EKWA_BUFF);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+			// Write buffer's data to var
+			tmp = this->cmd.one_arg(name, EKWA_WRT);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+		else {
+			// Call concat token
+			tmp = this->cmd.two_args(name, tmp_name, EKWA_CAT);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+		///////////////////////////////////////////////////
 		// Remove tmp var
 		tmp = this->cmd.one_arg(tmp_name, EKWA_RMV);
 		list.insert(list.end(), tmp.begin(), tmp.end());
@@ -891,16 +920,61 @@ vector<unsigned char *> _ekwa_function::action_var_string(string name,
 			cout << "Error: 9.\n";
 			exit(1);
 		}
-		// Write var to the buffer
-		tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
-		list.insert(list.end(), tmp.begin(), tmp.end());
-		// Write buffer's data to var
-		tmp = this->cmd.one_arg(name, EKWA_WRT);
-		list.insert(list.end(), tmp.begin(), tmp.end());
+
+		if (cat == false) {
+			// Write var to the buffer
+			tmp = this->cmd.one_arg(match.str(1), EKWA_BUFF);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+			// Write buffer's data to var
+			tmp = this->cmd.one_arg(name, EKWA_WRT);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
+		else {
+			// Call concat token
+			tmp = this->cmd.two_args(name, match.str(1), EKWA_CAT);
+			list.insert(list.end(), tmp.begin(), tmp.end());
+		}
 	}
 
 	return list;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //(\d+)
 //(\d+[.]\d)
 //"(.+?)"

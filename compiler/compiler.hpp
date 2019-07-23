@@ -17,7 +17,7 @@
 
 using namespace std;
 
-const string rgfns = "fn ([a-zA-Z0-9_]+)([\n][{])([a-zA-Z0-9 ><\n\t=+-_\"{}()!,.]+?[\n][}])";
+const string rgfns = "fn ([a-zA-Z0-9_]+)([\n][{])([a-zA-Z0-9 ><\n\t=+-_\"{}()!,.%/*]+?[\n][}])";
 const string rgvar_init = "^([string|int|float|auto]+) ([a-zA-Z0-9_]+) = (.+)";
 const string rgcall_m = "^([a-zA-Z0-0_]+[.][a-zA-Z0-9]+)[(](.*[)])$";
 const string rgarg = "arg ([string|int|float]+) ([a-zA-Z0-9_]+)";
@@ -29,6 +29,10 @@ const string rg_show = "^show[(]([a-zA-Z0-9_]+)[)]$";
 const string rg_break = "^break$";
 const string rg_exit = "^exit$";
 const string rg_loop = "^loop$";
+
+const string rgvar_noinit_div = "^([a-zA-Z0-9_]+) [/]= (.+)";
+const string rgvar_noinit_mod = "^([a-zA-Z0-9_]+) [%]= (.+)";
+const string rgvar_noinit_mul = "^([a-zA-Z0-9_]+) [*]= (.+)";
 
 enum ekwa_tokens {
 	EKWA_VAR	= 0x01, // New var.
@@ -102,15 +106,14 @@ class _ekwa_function
 		string name;
 
 		void get_if(string, string, string, stringstream &, size_t &);
-		vector<unsigned char *> action_var_string_pl(string, string);
-		vector<unsigned char *> action_var_float_pl(string, string);
-		vector<unsigned char *> action_var_float_mn(string, string);
-		vector<unsigned char *> action_var_int_pl(string, string);
-		vector<unsigned char *> action_var_int_mn(string, string);
-		vector<unsigned char *> action_var_string(string, string);
-		vector<unsigned char *> action_var_float(string, string);
+		void action_var_noinit_div(string, string);
+		void action_var_noinit_mul(string, string);
+		vector<unsigned char *> action_var_int_mod(string, string);
+		void action_var_noinit_mod(string, string);
+		vector<unsigned char *> action_var_string(string, string, bool);
+		vector<unsigned char *> action_var_float(string, string, unsigned char);
 		vector<unsigned char *> action_var_auto(string, string);
-		vector<unsigned char *> action_var_int(string, string);
+		vector<unsigned char *> action_var_int(string, string, unsigned char);
 		vector<unsigned char *> add_var(struct ekwa_var);
 		void action_var_init(string, string, string);
 		vector<struct ekwa_var> find_args(string);

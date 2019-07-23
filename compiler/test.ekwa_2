@@ -1,46 +1,4 @@
 
-fn main
-{
-	string test = "some data"
-	string data = test
-	int integer = 10
-	int integer_2 = integer
-	float flvar = 12.1
-	auto fndata = tmodule.test(flvar, test, integer_2)
-	int i = 0
-
-	integer = 30
-
-	test += data
-	test += "ololo"
-
-	integer += integer_2
-
-	flvar += flvar
-	flvar -= 10.0
-
-	tmodule.test(flvar, test, integer_2)
-
-	if flvar == 10.3
-	{
-		test = "here you are!"
-	}
-
-	if flvar != 10.3
-	{
-		test = "lol"
-	}
-
-	loop
-	{
-		break
-	}
-
-	show(test)
-	exit
-}
-
-/////////////////////////////////////////////////////////////
 import
 {
 	./src/functions
@@ -92,4 +50,63 @@ fn main
 
 	string msg = "This is a test script."
 	show(msg)
+}
+
+
+
+
+
+fn main
+{
+	string test = "some data"
+	string data = test
+	int integer = 10
+	int integer_2 = integer
+	float flvar = 12.1
+	auto fndata = tmodule.test(data, test, integer_2)
+	int i = 0
+
+	integer = 30
+
+	test += data
+	test += "ololo"
+
+	integer += integer_2
+
+	flvar += flvar
+	flvar -= 10.0
+
+	tmodule.test(data, test, integer_2)
+
+	if flvar == 10.3
+	{
+		test = "here you are!"
+	}
+
+	if flvar != 10.3
+	{
+		test = "lol"
+	}
+
+	loop
+	{
+		if i == 8
+		{
+			break
+		}
+		
+		show(i)
+		i += 1
+	}
+
+	show(fndata)
+
+	integer /= 2
+	show(integer)
+
+	integer %= 3
+	show(integer)
+
+	integer *= 3
+	show(integer)
 }
